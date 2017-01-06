@@ -33,19 +33,23 @@ public class RedAuto extends VisionOpMode {
 
     private long lastStageStart;
 
-    //stuff for vision
+    //stuff for find_beacon_1
     LinkedList<Double> slidingConfidence = null;
+    static final double MIN_CONFIDENCE_MEAN = 0.50; //TODO determine value
+    static final int CONFIDENCE_WINDOW_PERIOD = 5; //TODO determine optimum
 
-    public enum STATE {INIT,TO_BALL,BUMP_BALL,FIND_BEACON_1,MOVE_BEACON_1,HIT_BEACON_1,LEAVE_BEACON_1,FIND_BEACON_2,MOVE_BEACON_2,HIT_BEACON_2,DONE}
+    //stuff for move_beacon_1
+    static final double prevError = 0;
+    static final double currError = 0;
+
+    public enum STATE {INIT,TO_BALL,BUMP_BALL,FIND_BEACON_1,MOVE_BEACON_1,HIT_BEACON_1,DONE}
     public STATE stage = STATE.INIT;
 
     //Time constants for autoadvance of autonomous mode
     public static final int TIME_BALL = 3000;
-    public static final int TIME_TO_FIND_BEACON_1 = 5000;
-    public static final int TIME_TO_MOVE_BEACON1 = 5000;
-    public static final int TIME_TO_LEAVE_BEACON = 5000;
-    public static final int TIME_TO_FIND_BEACON_2 = 1000;
-    public static final int TIME_TO_MOVE_BEACON2 = 1000;
+    public static final int TIME_TO_FIND_BEACON_1 = 5000;//millis
+    public static final int TIME_TO_MOVE_BEACON_1 = 5000;
+    public static final int TIME_TO_LEAVE_BEACON_1 = 5000;
 
     @Override
     public void loop()
@@ -99,43 +103,6 @@ public class RedAuto extends VisionOpMode {
                 break;
 
             case HIT_BEACON_1:
-                //TODO implement
-                /*
-                Use identification of the beacon to hit the correct side
-                 */
-                break;
-
-            case LEAVE_BEACON_1:
-                //TODO Implement
-                /*
-                back up and to left for a time
-                 */
-                break;
-
-            case FIND_BEACON_2:
-                //TODO Hunter identify beacon
-                /*
-                move servo fully right
-                slowly move left until beacon identified
-                center beacon on camera by moving servo and center servo on robot
-                    robot should directly face the beacon
-                 */
-                break;
-
-            case MOVE_BEACON_2:
-                //TODO implement
-                /*
-                Leave servo centered on robot
-                use the beacon offset from the center to navigate
-                    if to the right, lower right power
-                    if to the left, lower left power
-                    else, full power
-                when beacon leaves visible area, drive straight and hope :)
-
-                Identify which side is red, for hitting beacon
-                */
-                break;
-            case HIT_BEACON_2:
                 //TODO implement
                 /*
                 Use identification of the beacon to hit the correct side
@@ -248,16 +215,35 @@ public class RedAuto extends VisionOpMode {
         }
     }
 
-    void init_find_beacon()
+    void findBeacon()
     {
-        beacon_hitter.setPosition(0); //Set beacon hitter to full left
+        double confidence = beacon.getAnalysis().getConfidence();
+        slidingConfidence.add(confidence);
+        if(slidingConfidence.size() < CONFIDENCE_WINDOW_PERIOD) {
+            slidingConfidence.remove(0);
+        }
+        double meanConfidence = mean(slidingConfidence);
+        if(meanConfidence > MIN_CONFIDENCE_MEAN) {
+            left.setPower(0); //Stop motors because beacon is found
+            right.setPower(0); // "
+            stage = STATE.MOVE_BEACON_1;
+        } else {
+            left.setPower(1); //Set left to go backwards
+            //TODO this may not need to go max power
+        }
     }
 
-    void findBeacon_1()
-    {
-        Beacon.BeaconAnalysis anal = beacon.getAnalysis();
-        double centerX = anal.getCenter().x;
-        double confidence = anal.getConfidence();
+    /**
+     * Finds mean value of list
+     * @param data list of doubles
+     * @return mean value
+     */
+    double mean(List<Double> data) {
+        double sum = 0;
+        for(double value : data) {
+            sum += value;
+        }
+        return sum / data.size();
     }
 
     /**
