@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.lasarobotics.vision.android.Cameras;
 import org.lasarobotics.vision.ftc.resq.Beacon;
@@ -39,10 +40,17 @@ public class RedAuto extends VisionOpMode {
     static final int CONFIDENCE_WINDOW_PERIOD = 5; //TODO determine optimum
 
     //stuff for move_beacon_1
-    static final double prevError = 0;
-    static final double currError = 0;
+    boolean startedToBeacon1 = false; //set to true as soon as it starts
+    double prevError = 0; //previous error (for differential)
+    double Kp = 1; //Proportional constant //TODO find experimentally
+    double Kd = -1; //Differntial constant (negative) //TODO find experimentally
+    static final double FRAME_SIZE_BUFFER = 0; //Amount of space between frame height and beacon height before moving on //TODO find experimentally
+    static final double MIN_CONFIDENCE = 0.40; //TODO determine experimentally
 
-    public enum STATE {INIT,TO_BALL,BUMP_BALL,FIND_BEACON_1,MOVE_BEACON_1,HIT_BEACON_1,DONE}
+    //stuff for close_to_beacon_1
+    boolean startedCloseToBeacon1 = false;
+
+    public enum STATE {INIT,TO_BALL,BUMP_BALL,FIND_BEACON_1,MOVE_BEACON_1,CLOSE_TO_BEACON_1,HIT_BEACON_1,DONE}
     public STATE stage = STATE.INIT;
 
     //Time constants for autoadvance of autonomous mode
@@ -86,6 +94,7 @@ public class RedAuto extends VisionOpMode {
                 center beacon on camera by moving servo and center servo on robot
                     robot should directly face the beacon
                  */
+                findBeacon();
                 break;
 
             case MOVE_BEACON_1:
@@ -101,6 +110,14 @@ public class RedAuto extends VisionOpMode {
                 Identify which side is red, for hitting beacon
                 */
                 break;
+
+            case CLOSE_TO_BEACON_1:
+                //TODO implement
+                /*
+                When beacon goes out of camera range
+                Use sensors on top to get aligned with beacon more and sense distance as driving forward
+                Use same PD controller as MOVE_BEACON_1
+                 */
 
             case HIT_BEACON_1:
                 //TODO implement
@@ -211,12 +228,15 @@ public class RedAuto extends VisionOpMode {
         if(System.currentTimeMillis()-lastStageStart>1000)
         {
             stage=STATE.FIND_BEACON_1;
-            lastStageStart=System.currentTimeMillis();
+            lastStageStart=System.currentTimeMillis(); //save the time of the change
         }
     }
 
     void findBeacon()
     {
+        if(lastStageStart - System.currentTimeMillis() > TIME_TO_FIND_BEACON_1) {
+            //TODO time halt
+        }
         double confidence = beacon.getAnalysis().getConfidence();
         slidingConfidence.add(confidence);
         if(slidingConfidence.size() < CONFIDENCE_WINDOW_PERIOD) {
@@ -227,10 +247,13 @@ public class RedAuto extends VisionOpMode {
             left.setPower(0); //Stop motors because beacon is found
             right.setPower(0); // "
             stage = STATE.MOVE_BEACON_1;
+            lastStageStart = System.currentTimeMillis();
         } else {
             left.setPower(1); //Set left to go backwards
             //TODO this may not need to go max power
         }
+
+        //TODO test this
     }
 
     /**
@@ -268,13 +291,53 @@ public class RedAuto extends VisionOpMode {
 
     void goToBeacon()
     {
+        if(lastStageStart - System.currentTimeMillis() > TIME_TO_MOVE_BEACON_1) {
+            //TODO time halt
+        }
 
-        //TODO do this
+        Beacon.BeaconAnalysis anal = beacon.getAnalysis();
+        Size frameSize = getFrameSize();
+        if(anal.isBeaconFound() && anal.getConfidence() > MIN_CONFIDENCE) {
+            double beaconHeight = anal.getHeight();
+            double beaconWidth = anal.getWidth();
+            double frameHeight = frameSize.height;
+            double frameWidth = frameSize.width;
+            if(frameHeight - beaconHeight >= FRAME_SIZE_BUFFER
+                    || frameWidth - beaconWidth >= FRAME_SIZE_BUFFER) {
+                stage = STATE.CLOSE_TO_BEACON_1;
+                lastStageStart = System.currentTimeMillis();
+            }
+            //TODO use telemetry to ensure that frame size and beacon size are the same scale
+
+            double beaconCenterX = anal.getCenter().x; //beacon center x
+            double frameCenterX = frameSize.width / 2; //frame center x
+            double error = frameCenterX - beaconCenterX; //error in x from beacon (right is positive)
+
+            if(startedToBeacon1) {
+                double diff = error - prevError; //error differential
+                double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
+                left.setPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
+                right.setPower(Range.clip(-1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
+            } else {
+                prevError = error; //If this is the first time, only get the error to prevError
+                startedToBeacon1 = true;
+            }
+        } else {
+            //TODO if beacon not found (this is temporary and is stopping not ideal)
+            left.setPower(0);
+            right.setPower(0);
+        }
+
+        //TODO test this
     }
 
-    void alignBeaconPusher()
+    /*
+    Does the last section of going to beacon 1 during STATE.CLOSE_TO_BEACON_1
+     */
+    void gotoLastStretch()
     {
         //TODO do this
+
     }
 
     void clickBeacon()
