@@ -42,6 +42,7 @@ public class RedAuto extends VisionOpMode {
     //stuff for move_beacon_1
     boolean startedToBeacon1 = false; //set to true as soon as it starts
     double prevError = 0; //previous error (for differential)
+    double prevTime = 0; //previous time
     double Kp = 1; //Proportional constant //TODO find experimentally
     double Kd = -1; //Differntial constant (negative) //TODO find experimentally
     static final double FRAME_SIZE_BUFFER = 0; //Amount of space between frame height and beacon height before moving on //TODO find experimentally
@@ -49,6 +50,18 @@ public class RedAuto extends VisionOpMode {
 
     //stuff for close_to_beacon_1
     boolean startedCloseToBeacon1 = false;
+    double closeKp = 1; //Close proportional constant //TODO find experimentally
+    double closeKd = -1; //Close differntial constant (negative) //TODO find experimentally
+    double prevCloseError = 0;
+    double prevCloseTime = 0;
+    static final double CLOSE_DRIVE_POWER = 0.3;
+    static final double PRESSABLE_DISTANCE = 0.2; //Optical sensor light/maxLight when ready to press //TODO find experimentally
+
+    //stuff for pressing buttons
+    int rightRed = 0; //Counts the number of hits for right red during goToBeacon_1
+    int leftRed = 0; //Counts the number of hits for left red during goToBeacon_1
+    static final double PRESSED_DISTANCE = 0.1; //Optical sensor light/maxLight when pressed //TODO find experimentally
+    static final double PRESS_RATE = 0.01; //Change servo distance between loop iterations //TODO find experimentally
 
     public enum STATE {INIT,TO_BALL,BUMP_BALL,FIND_BEACON_1,MOVE_BEACON_1,CLOSE_TO_BEACON_1,HIT_BEACON_1,DONE}
     public STATE stage = STATE.INIT;
@@ -87,7 +100,6 @@ public class RedAuto extends VisionOpMode {
                 break;
 
             case FIND_BEACON_1:
-                //TODO Hunter identify beacon
                 /*
                 move servo fully left
                 slowly move right until beacon identified
@@ -98,7 +110,6 @@ public class RedAuto extends VisionOpMode {
                 break;
 
             case MOVE_BEACON_1:
-                //TODO implement
                 /*
                 Leave servo centered on robot
                 use the beacon offset from the center to navigate
@@ -109,6 +120,7 @@ public class RedAuto extends VisionOpMode {
 
                 Identify which side is red, for hitting beacon
                 */
+                goToBeacon();
                 break;
 
             case CLOSE_TO_BEACON_1:
@@ -118,12 +130,15 @@ public class RedAuto extends VisionOpMode {
                 Use sensors on top to get aligned with beacon more and sense distance as driving forward
                 Use same PD controller as MOVE_BEACON_1
                  */
+                gotoLastStretch();
+                break;
 
             case HIT_BEACON_1:
                 //TODO implement
                 /*
                 Use identification of the beacon to hit the correct side
                  */
+                clickBeacon();
                 break;
             case DONE:
                 stop();
@@ -232,6 +247,7 @@ public class RedAuto extends VisionOpMode {
         }
     }
 
+    //TODO test
     void findBeacon()
     {
         if(lastStageStart - System.currentTimeMillis() > TIME_TO_FIND_BEACON_1) {
@@ -289,6 +305,7 @@ public class RedAuto extends VisionOpMode {
         return Math.sqrt(variance);
     }
 
+    //TODO test
     void goToBeacon()
     {
         if(lastStageStart - System.currentTimeMillis() > TIME_TO_MOVE_BEACON_1) {
@@ -313,35 +330,78 @@ public class RedAuto extends VisionOpMode {
             double frameCenterX = frameSize.width / 2; //frame center x
             double error = frameCenterX - beaconCenterX; //error in x from beacon (right is positive)
 
+            double time = System.nanoTime();
+
             if(startedToBeacon1) {
-                double diff = error - prevError; //error differential
+                double diff = (error - prevError) / (time - prevTime); //error differential
                 double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
                 left.setPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
                 right.setPower(Range.clip(-1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
+                prevError = error;
+                prevTime = time;
             } else {
                 prevError = error; //If this is the first time, only get the error to prevError
+                prevTime = time;
                 startedToBeacon1 = true;
+            }
+
+            if(anal.isRightRed()) {
+                rightRed++; //Add to right count if right is red
+            }
+
+            if(anal.isLeftRed()) {
+                leftRed++; //Add to left count if left is red
             }
         } else {
             //TODO if beacon not found (this is temporary and is stopping not ideal)
             left.setPower(0);
             right.setPower(0);
         }
-
-        //TODO test this
     }
 
     /*
     Does the last section of going to beacon 1 during STATE.CLOSE_TO_BEACON_1
      */
-    void gotoLastStretch()
-    {
-        //TODO do this
-
+    //TODO test
+    void gotoLastStretch() {
+        double distance1 = dist1.getRawLightDetected() / dist1.getRawLightDetectedMax();
+        double distance2 = dist2.getRawLightDetected() / dist2.getRawLightDetectedMax();
+        if (distance1 < PRESSABLE_DISTANCE && distance2 < PRESSABLE_DISTANCE) {
+            //Case the robot is close enough
+            right.setPower(0);
+            left.setPower(0);
+            lastStageStart = System.currentTimeMillis();
+            stage = STATE.HIT_BEACON_1;
+        } else if (startedCloseToBeacon1) {
+            //Case the robot needs to get closer and adjust
+            double closeError = distance2 - distance2; //error = difference in distances
+            double closeTime = System.nanoTime();
+            double closeDiff = (closeError - prevCloseError) / (closeTime - prevCloseTime);
+            double correction = closeKp * closeError + closeKd * closeDiff; //PD controller
+            beacon_hitter.setPosition(Range.clip(beacon_hitter.getPosition() + correction, 0, 1));
+            prevCloseError = closeError;
+            prevCloseTime = closeTime;
+        } else {
+            //init close_to_beacon_1
+            beacon_hitter.setPosition(0.5); //put servo in the middle
+            prevCloseError = distance2 - distance2; //error = difference in distances; save to prev
+            startedCloseToBeacon1 = true;
+            right.setPower(CLOSE_DRIVE_POWER);
+            left.setPower(-CLOSE_DRIVE_POWER);
+            prevCloseTime = System.nanoTime();
+        }
     }
 
     void clickBeacon()
     {
-        //TODO do this
+        double distance1 = dist1.getRawLightDetected() / dist1.getRawLightDetectedMax();
+        double distance2 = dist2.getRawLightDetected() / dist2.getRawLightDetectedMax();
+        if((leftRed > rightRed ? distance1 : distance2) <= PRESSED_DISTANCE) { //TODO make sure directions are right
+            lastStageStart = System.currentTimeMillis();
+            stage = STATE.DONE;
+        } else {
+            double change = leftRed > rightRed ? PRESS_RATE : -PRESS_RATE; //TODO make sure directions are right
+            beacon_hitter.setPosition(Range.clip(beacon_hitter.getPosition() + change, 0, 1));
+        }
     }
 }
