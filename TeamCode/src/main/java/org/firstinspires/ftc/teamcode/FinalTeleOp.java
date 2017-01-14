@@ -59,7 +59,7 @@ public class FinalTeleOp extends OpMode
 
         //Driving
         right.setPower(gamepad1.right_stick_y);
-        left.setPower(-gamepad1.left_stick_y);
+        left.setPower(gamepad1.left_stick_y);
 
 
 
