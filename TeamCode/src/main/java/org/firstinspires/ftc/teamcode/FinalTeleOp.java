@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -12,9 +14,26 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "Final TeleOp")
 public class FinalTeleOp extends OpMode
 {
-
-    DcMotor right,left,intake,shooter;
+    DcMotor right, left, shooter;
     Servo beacon;
+
+    /**
+     * Tank Drive System Description
+     *
+     * Gamepad 1 (Driver):
+     *      Left Joystick y: Left Drive
+     *      Right Joystick y: Right Drive
+     *
+     * Gamepad 2 (Operator):
+     *      Triggers:
+     *          Right (Shoot direction)
+     *          Left (Reverse)
+     *          (Right - Left is direction)
+     *      Bumpers:
+     *          Both or Neither (Centered)
+     *          Right (Right hitter)
+     *          Left (Left hitter)
+     */
 
     @Override
     public void init()
@@ -25,7 +44,8 @@ public class FinalTeleOp extends OpMode
 
         beacon = hardwareMap.servo.get("beacon");
 
-        beacon.setPosition(.3);
+        beacon.setPosition(0.5);
+        left.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     @Override
@@ -51,14 +71,14 @@ public class FinalTeleOp extends OpMode
          * Right Trigger shoot
          * Left Trigger reverse
          *
-        */
+         */
 
-        if(!(gamepad2.right_bumper ^ gamepad2.left_bumper))//cheeky xor
-            beacon.setPosition(.3);
-        else if(gamepad2.right_bumper)//right hit, set to hit right button
-            beacon.setPosition(.1);
-        else//left pressed, set to hit left button
+        if(!(gamepad2.right_bumper ^ gamepad2.left_bumper))//cheeky xor - both or neither
             beacon.setPosition(.5);
+        else if(gamepad2.right_bumper)//right hit, set to hit right button
+            beacon.setPosition(.3);
+        else//left pressed, set to hit left button
+            beacon.setPosition(.7);
 
         shooter.setPower(gamepad2.right_trigger-gamepad2.left_trigger);
     }
