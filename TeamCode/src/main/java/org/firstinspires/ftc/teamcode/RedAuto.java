@@ -190,9 +190,9 @@ public class RedAuto extends VisionOpMode {
         left = hardwareMap.dcMotor.get("left");
 
         //Instantiate the sensor and servos
-        beacon_hitter = hardwareMap.servo.get("beacon_hitter");
-        dist1 = hardwareMap.opticalDistanceSensor.get("dist1");
-        dist2 = hardwareMap.opticalDistanceSensor.get("dist2");
+        beacon_hitter = hardwareMap.servo.get("beacon");
+        dist1 = hardwareMap.opticalDistanceSensor.get("leftDist");
+        dist2 = hardwareMap.opticalDistanceSensor.get("rightDist");
 
         //Initialize sensors and servo
         beacon_hitter.setPosition(.5);
