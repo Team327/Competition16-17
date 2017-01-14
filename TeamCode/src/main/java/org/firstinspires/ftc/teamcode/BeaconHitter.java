@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "BeaconTester")
 
-//@Disabled
+@Disabled
 public class BeaconHitter extends OpMode {
 
     private double dist1Last,dist2Last;

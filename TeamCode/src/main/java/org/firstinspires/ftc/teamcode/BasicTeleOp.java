@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +11,7 @@ import org.lasarobotics.vision.android.Camera;
  * Created by gssmrobotics on 11/2/2016.
  */
 @TeleOp
+@Disabled
 public class BasicTeleOp extends OpMode {
     DcMotor frontLeft, frontRight, backLeft, backRight,intake, shooter;
 

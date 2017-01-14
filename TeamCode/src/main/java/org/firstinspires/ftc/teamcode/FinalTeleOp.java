@@ -16,6 +16,7 @@ public class FinalTeleOp extends OpMode
     DcMotor right,left,intake,shooter;
     Servo beacon;
 
+    @Override
     public void init()
     {
         right=hardwareMap.dcMotor.get("right");
@@ -27,6 +28,7 @@ public class FinalTeleOp extends OpMode
         beacon.setPosition(.3);
     }
 
+    @Override
     public void loop()
     {
         /*

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 
 @Autonomous(name = "Push Autonomous")
+@Disabled
 public class PushAutonomous extends OpMode{
 
     DcMotor left,right;
