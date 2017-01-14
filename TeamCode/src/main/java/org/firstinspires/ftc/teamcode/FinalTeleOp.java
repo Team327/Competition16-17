@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -15,7 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class FinalTeleOp extends OpMode
 {
     DcMotor right, left, shooter;
-    Servo beacon;
+    Servo beaconHitter;
 
     /**
      * Tank Drive System Description
@@ -42,9 +41,9 @@ public class FinalTeleOp extends OpMode
         left=hardwareMap.dcMotor.get("left");
         shooter=hardwareMap.dcMotor.get("shooter");
 
-        beacon = hardwareMap.servo.get("beacon");
+        beaconHitter = hardwareMap.servo.get("beacon");
 
-        beacon.setPosition(0.5);
+        beaconHitter.setPosition(0.5);
         left.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
@@ -74,12 +73,11 @@ public class FinalTeleOp extends OpMode
          */
 
         if(!(gamepad2.right_bumper ^ gamepad2.left_bumper))//cheeky xor - both or neither
-            beacon.setPosition(.5);
+            beaconHitter.setPosition(TeamConstants.BEACON_CENTER);
         else if(gamepad2.right_bumper)//right hit, set to hit right button
-            beacon.setPosition(.3);
+            beaconHitter.setPosition(TeamConstants.BEACON_CENTER + TeamConstants.BEACON_HIT);
         else//left pressed, set to hit left button
-            beacon.setPosition(.7);
-
+            beaconHitter.setPosition(TeamConstants.BEACON_CENTER - TeamConstants.BEACON_HIT);
         shooter.setPower(gamepad2.right_trigger-gamepad2.left_trigger);
     }
 

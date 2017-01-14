@@ -75,8 +75,8 @@ public class RedAuto extends VisionOpMode {
     @Override
     public void loop()
     {
-        switch(stage)
-        {
+        telemetry.addData("State", stage);
+        switch(stage) {
             case INIT: //Checks if the robot just started running
                 initialize();
                 //no break here to continue immediately to moving to ball
@@ -143,7 +143,6 @@ public class RedAuto extends VisionOpMode {
             case DONE:
                 stop();
         }
-
     }
 
     /*
@@ -252,6 +251,8 @@ public class RedAuto extends VisionOpMode {
     {
         if(lastStageStart - System.currentTimeMillis() > TIME_TO_FIND_BEACON_1) {
             //TODO time halt
+            left.setPower(0);
+            right.setPower(0);
         }
         double confidence = beacon.getAnalysis().getConfidence();
         slidingConfidence.add(confidence);
@@ -265,7 +266,8 @@ public class RedAuto extends VisionOpMode {
             stage = STATE.MOVE_BEACON_1;
             lastStageStart = System.currentTimeMillis();
         } else {
-            left.setPower(1); //Set left to go backwards
+            left.setPower(-0.3); //Set left to go backwards
+            right.setPower(-0.3);
             //TODO this may not need to go max power
         }
 
@@ -378,12 +380,14 @@ public class RedAuto extends VisionOpMode {
             double closeTime = System.nanoTime();
             double closeDiff = (closeError - prevCloseError) / (closeTime - prevCloseTime);
             double correction = closeKp * closeError + closeKd * closeDiff; //PD controller
-            beacon_hitter.setPosition(Range.clip(beacon_hitter.getPosition() + correction, 0, 1));
+            beacon_hitter.setPosition(Range.clip(beacon_hitter.getPosition() + correction,
+                    TeamConstants.BEACON_CENTER - TeamConstants.BEACON_HIT,
+                    TeamConstants.BEACON_CENTER + TeamConstants.BEACON_HIT));
             prevCloseError = closeError;
             prevCloseTime = closeTime;
         } else {
             //init close_to_beacon_1
-            beacon_hitter.setPosition(0.5); //put servo in the middle
+            beacon_hitter.setPosition(TeamConstants.BEACON_CENTER); //put servo in the middle
             prevCloseError = distance2 - distance2; //error = difference in distances; save to prev
             startedCloseToBeacon1 = true;
             right.setPower(CLOSE_DRIVE_POWER);
@@ -401,7 +405,9 @@ public class RedAuto extends VisionOpMode {
             stage = STATE.DONE;
         } else {
             double change = leftRed > rightRed ? PRESS_RATE : -PRESS_RATE; //TODO make sure directions are right
-            beacon_hitter.setPosition(Range.clip(beacon_hitter.getPosition() + change, 0, 1));
+            beacon_hitter.setPosition(Range.clip(beacon_hitter.getPosition() + change,
+                    TeamConstants.BEACON_CENTER - TeamConstants.BEACON_HIT,
+                    TeamConstants.BEACON_CENTER + TeamConstants.BEACON_HIT));
         }
     }
 }
