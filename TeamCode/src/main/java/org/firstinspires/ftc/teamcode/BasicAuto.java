@@ -17,10 +17,10 @@ public class BasicAuto extends OpMode {
     State stage = State.NULL;
 
     public static final double TIME_DELAY = 10000; //Wait 10 seconds to go
-    public static final double TIME_SHOOT_PREPARE = 400; //Time to go forward before shooting
-    public static final double TIME_SHOOT_LOAD = 100; //Time to go backwards before shooting milliseconds
-    public static final double TIME_SHOOT = 1000; //Time to shoot
-    public static final double TIME_TO_BALL = 1000; //Time to go to ball
+    public static final double TIME_SHOOT_PREPARE = 800; //Distance to go forward before shooting
+    public static final double TIME_SHOOT_LOAD = 100; //Time to go backwards before shooting (ms)
+    public static final double TIME_SHOOT = 1000; //Time to shoot (ms)
+    public static final double TIME_TO_BALL = 2000; //Distance to go to ball
 
     double lastStageTime = 0;
 
@@ -34,6 +34,8 @@ public class BasicAuto extends OpMode {
         right.setDirection(DcMotorSimple.Direction.REVERSE);
         stage = State.DELAY;
         lastStageTime = System.currentTimeMillis();
+        left.setPower(0);
+        right.setPower(0);
     }
 
     @Override

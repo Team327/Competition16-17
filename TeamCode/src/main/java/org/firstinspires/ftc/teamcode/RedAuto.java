@@ -68,7 +68,7 @@ public class RedAuto extends VisionOpMode {
 
     //Time constants for autoadvance of autonomous mode
     public static final int TIME_BALL = 3000;
-    public static final int TIME_TO_FIND_BEACON_1 = 5000;//millis
+    public static final int TIME_TO_FIND_BEACON_1 = 5000; //millis
     public static final int TIME_TO_MOVE_BEACON_1 = 5000;
     public static final int TIME_TO_LEAVE_BEACON_1 = 5000;
 
