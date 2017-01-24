@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by gssmrobotics on 12/9/2016.
@@ -13,8 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "Final TeleOp")
 public class FinalTeleOp extends OpMode
 {
-    DcMotor right, left, shooter;
-    Servo beaconHitter;
+    Robot robot;
 
     /**
      * Tank Drive System Description
@@ -37,14 +33,7 @@ public class FinalTeleOp extends OpMode
     @Override
     public void init()
     {
-        right=hardwareMap.dcMotor.get("right");
-        left=hardwareMap.dcMotor.get("left");
-        shooter=hardwareMap.dcMotor.get("shooter");
-
-        beaconHitter = hardwareMap.servo.get("beacon");
-
-        beaconHitter.setPosition(0.5);
-        left.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot = new Robot(hardwareMap);
     }
 
     @Override
@@ -57,8 +46,8 @@ public class FinalTeleOp extends OpMode
         */
 
         //Driving
-        right.setPower(gamepad1.right_stick_y);
-        left.setPower(gamepad1.left_stick_y);
+        robot.setRightPower(gamepad1.right_stick_y);
+        robot.setLeftPower(gamepad1.left_stick_y);
 
 
 
@@ -73,12 +62,18 @@ public class FinalTeleOp extends OpMode
          */
 
         if(!(gamepad2.right_bumper ^ gamepad2.left_bumper))//cheeky xor - both or neither
-            beaconHitter.setPosition(TeamConstants.BEACON_CENTER);
+            robot.centerBeacon();
         else if(gamepad2.right_bumper)//right hit, set to hit right button
-            beaconHitter.setPosition(TeamConstants.BEACON_CENTER + TeamConstants.BEACON_HIT);
+            robot.hitRightBeacon();
         else//left pressed, set to hit left button
-            beaconHitter.setPosition(TeamConstants.BEACON_CENTER - TeamConstants.BEACON_HIT);
-        shooter.setPower(gamepad2.right_trigger-gamepad2.left_trigger);
+            robot.hitLeftBeacon();
+
+        if(!(gamepad2.right_trigger >0 ^ gamepad2.left_trigger>0))//cheeky xor - both or neither over 1
+            robot.stopShooter();
+        else if(gamepad2.right_trigger >0)//right hit, shoot
+            robot.shoot();
+        else//left pressed, reverse shooter
+            robot.reverseShoot();
     }
 
 

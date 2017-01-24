@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 /**
  * Created by gssmrobotics on 1/14/2017.
@@ -11,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous(name = "Basic Autonomoose")
 public class BasicAuto extends OpMode {
-    DcMotor left = null, right = null, shooter = null;
+    Robot robot;
 
     public enum State {NULL, DELAY, TO_SHOOT, SHOOTER_LOAD, SHOOT, TO_BALL, DONE}
     State stage = State.NULL;
@@ -28,14 +26,10 @@ public class BasicAuto extends OpMode {
 
     @Override
     public void init() {
-        left = hardwareMap.dcMotor.get("left");
-        right = hardwareMap.dcMotor.get("right");
-        shooter = hardwareMap.dcMotor.get("shooter");
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot = new Robot(hardwareMap);
+        robot.reverseFront();
         stage = State.DELAY;
         lastStageTime = System.currentTimeMillis();
-        left.setPower(0);
-        right.setPower(0);
     }
 
     @Override
@@ -49,45 +43,44 @@ public class BasicAuto extends OpMode {
                 break;
             case TO_SHOOT:
                 if(System.currentTimeMillis() - lastStageTime < TIME_SHOOT_PREPARE) {
-                    left.setPower(1);
-                    right.setPower(1);
+                    robot.setRightPower(1);
+                    robot.setLeftPower(1);
                 } else {
-                    left.setPower(0);
-                    right.setPower(0);
+                    robot.brake();
                     stage = State.SHOOTER_LOAD;
                     lastStageTime = System.currentTimeMillis();
                 }
                 break;
             case SHOOTER_LOAD:
                 if(System.currentTimeMillis() - lastStageTime < TIME_SHOOT_LOAD) {
-                    shooter.setPower(-1);
+                    robot.reverseShoot();
                 } else {
-                    shooter.setPower(0);
+                    robot.stopShooter();
                     stage = State.SHOOT;
                     lastStageTime = System.currentTimeMillis();
                 }
             case SHOOT:
                 if(System.currentTimeMillis() - lastStageTime < TIME_SHOOT) {
-                    shooter.setPower(1);
+                    robot.shoot();
                 } else {
-                    shooter.setPower(0);
+                    robot.stopShooter();
                     stage = State.TO_BALL;
                     lastStageTime = System.currentTimeMillis();
                 }
             case TO_BALL:
                 if(System.currentTimeMillis() - lastStageTime < TIME_TO_BALL) {
-                    left.setPower(1);
-                    right.setPower(1);
+                    robot.setLeftPower(1);
+                    robot.setRightPower(1);
                 } else {
-                    left.setPower(0);
-                    right.setPower(0);
+                    robot.brake();
                     stage = State.DONE;
                     lastStageTime = System.currentTimeMillis();
                 }
 
-            case NULL:
+            case DONE:
+
             default:
-                //Do nothing
+                //Should never be reached
                 break;
         }
     }
