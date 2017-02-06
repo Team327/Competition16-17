@@ -45,9 +45,23 @@ public class FinalTeleOp extends OpMode
          * Sticks to drive - Tank drive
         */
 
-        //Driving
-        robot.setRightPower(gamepad1.right_stick_y);
-        robot.setLeftPower(gamepad1.left_stick_y);
+        //This locks out the driver if the shooter hits any dpad button
+        if(!(gamepad2.dpad_down||gamepad2.dpad_left||gamepad2.dpad_right||gamepad2.dpad_up)) {
+            //Driving
+            robot.setRightPower(gamepad1.right_stick_y);
+            robot.setLeftPower(gamepad1.left_stick_y);
+
+            if(gamepad1.a) {
+                robot.flipIn();
+            }
+            else if(gamepad1.b) {
+                robot.flipOut();
+            }
+            else {
+                robot.stopFlip();
+            }
+        }
+
 
 
 

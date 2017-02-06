@@ -8,4 +8,5 @@ public class TeamConstants {
     public static final double TIRE_RADIUS = 7.520 / 2; // small tire (cm)
     public static final double BEACON_CENTER = 0.54; //Beacon hitter servo center position
     public static final double BEACON_HIT = 0.08; //Beacon hitter position change to hit
+    public static final double FLIPPER_SPEED = 0.8;
 }
