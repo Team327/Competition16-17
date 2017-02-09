@@ -22,7 +22,7 @@ public class RedAuto extends VisionOpMode {
 
     Robot robot;
 
-    private double dist1Last,dist2Last;
+    // private double dist1Last,dist2Last;
 
     private double lastError=0;
     private long lastTime= System.nanoTime();
@@ -62,7 +62,7 @@ public class RedAuto extends VisionOpMode {
     public STATE stage = STATE.INIT;
 
     //Time constants for autoadvance of autonomous mode
-    public static final int TIME_BALL = 3000;
+    public static final int TIME_BALL = 2000;
     public static final int TIME_TO_FIND_BEACON_1 = 5000; //millis
     public static final int TIME_TO_MOVE_BEACON_1 = 5000;
     public static final int TIME_TO_LEAVE_BEACON_1 = 5000;
@@ -119,7 +119,7 @@ public class RedAuto extends VisionOpMode {
                 break;
 
             case CLOSE_TO_BEACON_1:
-                //TODO implement
+
                 /*
                 When beacon goes out of camera range
                 Use sensors on top to get aligned with beacon more and sense distance as driving forward
@@ -129,7 +129,6 @@ public class RedAuto extends VisionOpMode {
                 break;
 
             case HIT_BEACON_1:
-                //TODO implement
                 /*
                 Use identification of the beacon to hit the correct side
                  */
@@ -201,13 +200,13 @@ public class RedAuto extends VisionOpMode {
         robot.setLeftPower(1);
 
         //check if one of the distance sensors is close enough to the ball
-        if(robot.rightDist()>.06 || robot.leftDist()>.06)
+        if(robot.getDist()>.035)
         {
             robot.brake();
             lastStageStart=System.currentTimeMillis(); //save the time of the change
             stage=STATE.BUMP_BALL; //advance a stage
         }
-        if(System.currentTimeMillis()-lastStageStart>5000) //if time is over a threshold, move on to beacon1
+        else if(System.currentTimeMillis()-lastStageStart>5000) //if time is over a threshold, move on to beacon1
         {
             robot.brake();
             lastStageStart=System.currentTimeMillis(); //save the time of the change
@@ -344,45 +343,47 @@ public class RedAuto extends VisionOpMode {
      */
     //TODO test
     void gotoLastStretch() {
-        double leftDist = robot.leftDist();
-        double rightDist = robot.rightDist();
-        if (rightDist < PRESSABLE_DISTANCE && leftDist < PRESSABLE_DISTANCE) {
+        double dist = robot.getDist();
+        if (dist < PRESSABLE_DISTANCE) {
             //Case the robot is close enough
             robot.brake();
             robot.setForward();
             lastStageStart = System.currentTimeMillis();
             stage = STATE.HIT_BEACON_1;
         } else if (startedCloseToBeacon1) {
-            //Case the robot needs to get closer and adjust
-            double closeError = rightDist - leftDist; //error = difference in distances //TODO check sides
-            double closeTime = System.nanoTime();
-            double closeDiff = (closeError - prevCloseError) / (closeTime - prevCloseTime);
-            double correction = closeKp * closeError + closeKd * closeDiff; //PD controller
-            robot.correctBeacon(correction);
-            prevCloseError = closeError;
-            prevCloseTime = closeTime;
+//            //Case the robot needs to get closer and adjust
+//            double closeError = rightDist - leftDist; //error = difference in distances //TODO check sides
+//            double closeTime = System.nanoTime();
+//            double closeDiff = (closeError - prevCloseError) / (closeTime - prevCloseTime);
+//            double correction = closeKp * closeError + closeKd * closeDiff; //PD controller
+//            robot.correctBeacon(correction);
+//            prevCloseError = closeError;
+//            prevCloseTime = closeTime;
+            robot.setRightPower(1);
+            robot.setLeftPower(1);
         } else {
-            //init close_to_beacon_1
-            robot.centerBeacon(); //put servo in the middle
-            prevCloseError = leftDist - leftDist; //error = difference in distances; save to prev
-            startedCloseToBeacon1 = true;
+//            //init close_to_beacon_1
+//            robot.centerBeacon(); //put servo in the middle
+//            prevCloseError = leftDist - leftDist; //error = difference in distances; save to prev
+//            startedCloseToBeacon1 = true;
             robot.setBackward();
             robot.setRightPower(CLOSE_DRIVE_POWER);
             robot.setLeftPower(CLOSE_DRIVE_POWER);
-            prevCloseTime = System.nanoTime();
+//            prevCloseTime = System.nanoTime();
         }
     }
 
     void clickBeacon()
     {
-        double leftDist = robot.leftDist();
-        double rightDist = robot.rightDist();
-        if((leftRed > rightRed ? leftDist : rightDist) <= PRESSED_DISTANCE) { //TODO make sure directions are right
-            lastStageStart = System.currentTimeMillis();
-            stage = STATE.DONE;
-        } else {
-            double change = leftRed > rightRed ? PRESS_RATE : -PRESS_RATE; //TODO make sure directions are right
-            robot.correctBeacon(change);
-        }
+//        double leftDist = robot.leftDist();
+//        double rightDist = robot.rightDist();
+//        if((leftRed > rightRed ? leftDist : rightDist) <= PRESSED_DISTANCE) { //TODO make sure directions are right
+//            lastStageStart = System.currentTimeMillis();
+//            stage = STATE.DONE;
+//        } else {
+//            double change = leftRed > rightRed ? PRESS_RATE : -PRESS_RATE; //TODO make sure directions are right
+//            robot.correctBeacon(change);
+//        }
+
     }
 }

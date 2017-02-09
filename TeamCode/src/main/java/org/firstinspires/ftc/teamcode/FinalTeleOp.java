@@ -12,12 +12,19 @@ public class FinalTeleOp extends OpMode
 {
     Robot robot;
 
+    private long lastFrontChange;
     /**
      * Tank Drive System Description
      *
      * Gamepad 1 (Driver):
      *      Left Joystick y: Left Drive
      *      Right Joystick y: Right Drive
+     *
+     *      A:
+     *          Flipper down
+     *      B:
+     *          Flipper up
+     *
      *
      * Gamepad 2 (Operator):
      *      Triggers:
@@ -28,12 +35,14 @@ public class FinalTeleOp extends OpMode
      *          Both or Neither (Centered)
      *          Right (Right hitter)
      *          Left (Left hitter)
+     *
      */
 
     @Override
     public void init()
     {
         robot = new Robot(hardwareMap);
+        lastFrontChange = System.currentTimeMillis();
     }
 
     @Override
@@ -44,6 +53,11 @@ public class FinalTeleOp extends OpMode
          *
          * Sticks to drive - Tank drive
         */
+
+        if((gamepad1.right_bumper || gamepad1.left_bumper)&& System.currentTimeMillis()-lastFrontChange >300) {
+            robot.reverseFront();
+            lastFrontChange = System.currentTimeMillis();
+        }
 
         //This locks out the driver if the shooter hits any dpad button
         if(!(gamepad2.dpad_down||gamepad2.dpad_left||gamepad2.dpad_right||gamepad2.dpad_up)) {
@@ -56,9 +70,6 @@ public class FinalTeleOp extends OpMode
             }
             else if(gamepad1.b) {
                 robot.flipOut();
-            }
-            else {
-                robot.stopFlip();
             }
         }
 
@@ -75,12 +86,14 @@ public class FinalTeleOp extends OpMode
          *
          */
 
-        if(!(gamepad2.right_bumper ^ gamepad2.left_bumper))//cheeky xor - both or neither
+        if(gamepad2.right_bumper && gamepad2.left_bumper)
             robot.centerBeacon();
         else if(gamepad2.right_bumper)//right hit, set to hit right button
             robot.hitRightBeacon();
-        else//left pressed, set to hit left button
+        else if(gamepad2.left_bumper)//left pressed, set to hit left button
             robot.hitLeftBeacon();
+        else
+            robot.centerBeacon();
 
         if(!(gamepad2.right_trigger >0 ^ gamepad2.left_trigger>0))//cheeky xor - both or neither over 1
             robot.stopShooter();

@@ -11,77 +11,75 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 public class BasicAuto extends OpMode {
     Robot robot;
 
-    public enum State {NULL, DELAY, TO_SHOOT, SHOOTER_LOAD, SHOOT, TO_BALL, DONE}
+    boolean lastShooterFixerPositive = true;
+    public enum State {NULL, DELAY, SHOOT,SAVING_PRIVATE_SHOOTER, TO_BALL, DONE}
     State stage = State.NULL;
 
-    public static final double TIME_DELAY = 10000; //Wait 10 seconds to go
-    public static final double TIME_SHOOT_PREPARE = 800; //Distance to go forward before shooting
-    public static final double TIME_SHOOT_LOAD = 100; //Time to go backwards before shooting (ms)
+    public static final double TIME_DELAY = 3000; //Wait 3 seconds to go
+    public static final double TIME_SAVE_SHOOTER = 7000;
     public static final double TIME_SHOOT = 1000; //Time to shoot (ms)
-    public static final double TIME_TO_BALL = 2000; //Distance to go to ball
+    public static final double TIME_TO_BALL = 1500; //Distance to go to ball
 
     double lastStageTime = 0;
-
-    //TODO Fix everything (especially driving while shooting
 
     @Override
     public void init() {
         robot = new Robot(hardwareMap);
         robot.reverseFront();
         stage = State.DELAY;
-        lastStageTime = System.currentTimeMillis();
+        lastStageTime=0;
     }
 
     @Override
     public void loop() {
-        switch (stage) {
-            case DELAY:
-                if(System.currentTimeMillis() - lastStageTime >= TIME_DELAY) {
-                    stage = State.TO_SHOOT;
-                    lastStageTime = System.currentTimeMillis();
-                }
-                break;
-            case TO_SHOOT:
-                if(System.currentTimeMillis() - lastStageTime < TIME_SHOOT_PREPARE) {
-                    robot.setRightPower(1);
-                    robot.setLeftPower(1);
-                } else {
-                    robot.brake();
-                    stage = State.SHOOTER_LOAD;
-                    lastStageTime = System.currentTimeMillis();
-                }
-                break;
-            case SHOOTER_LOAD:
-                if(System.currentTimeMillis() - lastStageTime < TIME_SHOOT_LOAD) {
-                    robot.reverseShoot();
-                } else {
-                    robot.stopShooter();
-                    stage = State.SHOOT;
-                    lastStageTime = System.currentTimeMillis();
-                }
-            case SHOOT:
-                if(System.currentTimeMillis() - lastStageTime < TIME_SHOOT) {
-                    robot.shoot();
-                } else {
-                    robot.stopShooter();
-                    stage = State.TO_BALL;
-                    lastStageTime = System.currentTimeMillis();
-                }
-            case TO_BALL:
-                if(System.currentTimeMillis() - lastStageTime < TIME_TO_BALL) {
-                    robot.setLeftPower(1);
-                    robot.setRightPower(1);
-                } else {
-                    robot.brake();
-                    stage = State.DONE;
-                    lastStageTime = System.currentTimeMillis();
-                }
+        if(lastStageTime==0) {
+            lastStageTime = System.currentTimeMillis();
+        }else {
+            switch (stage) {
+                case DELAY:
+                    if (System.currentTimeMillis() - lastStageTime >= TIME_DELAY) {
+                        stage = State.SHOOT;
+                        lastStageTime = System.currentTimeMillis();
+                    }
+                    break;
+                case SHOOT:
+                    if (System.currentTimeMillis() - lastStageTime < TIME_SHOOT) {
+                        robot.shoot();
+                    } else {
+                        robot.stopShooter();
+                        stage = State.SAVING_PRIVATE_SHOOTER;
+                        lastStageTime = System.currentTimeMillis();
+                    }
+                    break;
+                case SAVING_PRIVATE_SHOOTER:
+                    if (System.currentTimeMillis() - lastStageTime < TIME_SAVE_SHOOTER) {
 
-            case DONE:
+                        robot.setShooterPower(lastShooterFixerPositive ? -.1 : .12);
+                        lastShooterFixerPositive = !lastShooterFixerPositive;
+                    } else {
+                        robot.stopShooter();
+                        stage = State.TO_BALL;
+                        lastStageTime = System.currentTimeMillis();
+                    }
+                    break;
+                case TO_BALL:
+                    if (System.currentTimeMillis() - lastStageTime < TIME_TO_BALL) {
+                        robot.setLeftPower(1);
+                        robot.setRightPower(1);
+                    } else {
+                        robot.brake();
+                        stage = State.DONE;
+                        lastStageTime = System.currentTimeMillis();
+                        telemetry.addData("Status", "You did the thing, congrats");
+                    }
+                    break;
+                case DONE:
 
-            default:
-                //Should never be reached
-                break;
+                    break;
+                default:
+                    //Should never be reached
+                    break;
+            }
         }
     }
 }

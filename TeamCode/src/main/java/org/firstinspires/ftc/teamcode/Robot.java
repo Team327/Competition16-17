@@ -22,64 +22,34 @@ public class Robot {
         shooter = map.dcMotor.get("shooter");
         sideFlipperMotor = map.dcMotor.get("flipper");
         beaconHitter = map.dcMotor.get("beacon");
-        //TODO flipper
-        //TODO new beacon
 
-        //leftDistance = map.opticalDistanceSensor.get("left");
-        //rightDistance = map.opticalDistanceSensor.get("right");
-        //TODO are we even doing these anymore?
+        dist = map.opticalDistanceSensor.get("dist");
 
-        //rightDistance.enableLed(true);
-        //leftDistance.enableLed(true);
+        dist.enableLed(true);
     }
 
-    @Deprecated
-    public double rightDist()
+    public double getDist()
     {
-        //return rightDistance.getLightDetected();
-        return 0;
+        return dist.getLightDetected();
     }
 
-    @Deprecated
-    public double leftDist()
-    {
-        //return leftDistance.getLightDetected();
-        return 0;
-    }
-
-    @Deprecated
     public void hitRightBeacon()
     {
-        //beaconHitter.setPosition(TeamConstants.BEACON_CENTER + TeamConstants.BEACON_HIT);
+        beaconHitter.setPower(.25);
     }
 
-    @Deprecated
     public void hitLeftBeacon ()
     {
-        //beaconHitter.setPosition(TeamConstants.BEACON_CENTER - TeamConstants.BEACON_HIT);
+        beaconHitter.setPower(-.25);
     }
 
-    @Deprecated
     public void centerBeacon ()
     {
-        //beaconHitter.setPosition(TeamConstants.BEACON_CENTER);
+        beaconHitter.setPower(0);
     }
 
-    /**
-     * Slightly changes beacon position
-     * @param correction Amount to change position by (positive is more {TODO which direction is this?}
-     */
-    @Deprecated
-    public void correctBeacon (double correction) {
-        //beaconHitter.setPosition(Range.clip(beaconHitter.getPosition() + correction,
-        //        TeamConstants.BEACON_CENTER - TeamConstants.BEACON_HIT,
-        //        TeamConstants.BEACON_CENTER + TeamConstants.BEACON_HIT));
-    }
-
-    @Deprecated
-    public double beaconPosition () {
-        //return beaconHitter.getPosition();
-        return 0;
+    public double getBeaconPosition () {
+        return beaconHitter.getCurrentPosition();
     }
 
     public void shoot()
@@ -133,14 +103,15 @@ public class Robot {
     }
 
     public void flipIn() {
-        sideFlipperMotor.setPower(TeamConstants.FLIPPER_SPEED);
+        sideFlipperMotor.setPower(.4);
     }
 
     public void flipOut() {
-        sideFlipperMotor.setPower(-TeamConstants.FLIPPER_SPEED);
+        sideFlipperMotor.setPower(-.7);
     }
 
-    public void stopFlip() {
-        sideFlipperMotor.setPower(0);
+    public void setShooterPower(double power)
+    {
+        shooter.setPower(power);
     }
 }
