@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.tournament;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -60,19 +60,21 @@ public class FinalTeleOp extends OpMode
         }
 
         //This locks out the driver if the shooter hits any dpad button
-        if(!(gamepad2.dpad_down||gamepad2.dpad_left||gamepad2.dpad_right||gamepad2.dpad_up)) {
+        if (gamepad2.dpad_down || gamepad2.dpad_left || gamepad2.dpad_right || gamepad2.dpad_up) {
+            robot.brake();
+        } else {
             //Driving
             robot.setRightPower(gamepad1.right_stick_y);
             robot.setLeftPower(gamepad1.left_stick_y);
-
-            if(gamepad1.a) {
-                robot.flipIn();
-            }
-            else if(gamepad1.b) {
-                robot.flipOut();
-            }
         }
+        if (gamepad1.a) {
+            robot.flipIn();
+        } else if (gamepad1.b) {
+            robot.flipOut();
+        } else {
+            robot.stopFlipper();
 
+        }
 
 
 
@@ -86,23 +88,22 @@ public class FinalTeleOp extends OpMode
          *
          */
 
-        if(gamepad2.right_bumper && gamepad2.left_bumper)
+        if (gamepad2.right_bumper && gamepad2.left_bumper)
             robot.centerBeacon();
-        else if(gamepad2.right_bumper)//right hit, set to hit right button
+        else if (gamepad2.right_bumper)//right hit, set to hit right button
             robot.hitRightBeacon();
-        else if(gamepad2.left_bumper)//left pressed, set to hit left button
+        else if (gamepad2.left_bumper)//left pressed, set to hit left button
             robot.hitLeftBeacon();
         else
             robot.centerBeacon();
 
-        if(!(gamepad2.right_trigger >0 ^ gamepad2.left_trigger>0))//cheeky xor - both or neither over 1
+        if (!(gamepad2.right_trigger > 0 ^ gamepad2.left_trigger > 0))//cheeky xor - both or neither over 1
             robot.stopShooter();
-        else if(gamepad2.right_trigger >0)//right hit, shoot
+        else if (gamepad2.right_trigger > 0)//right hit, shoot
             robot.shoot();
         else//left pressed, reverse shooter
             robot.reverseShoot();
     }
-
 
 
 }

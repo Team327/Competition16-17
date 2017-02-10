@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.tournament;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -23,6 +23,11 @@ public class Robot {
         sideFlipperMotor = map.dcMotor.get("flipper");
         beaconHitter = map.dcMotor.get("beacon");
 
+        beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         dist = map.opticalDistanceSensor.get("dist");
 
         dist.enableLed(true);
@@ -35,12 +40,12 @@ public class Robot {
 
     public void hitRightBeacon()
     {
-        beaconHitter.setPower(.25);
+        beaconHitter.setPower(.325);
     }
 
     public void hitLeftBeacon ()
     {
-        beaconHitter.setPower(-.25);
+        beaconHitter.setPower(-.325);
     }
 
     public void centerBeacon ()
@@ -108,6 +113,10 @@ public class Robot {
 
     public void flipOut() {
         sideFlipperMotor.setPower(-.7);
+    }
+
+    public void stopFlipper() {
+        sideFlipperMotor.setPower(0);
     }
 
     public void setShooterPower(double power)

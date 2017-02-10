@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.tournament;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -18,7 +18,7 @@ public class BasicAuto extends OpMode {
     public static final double TIME_DELAY = 3000; //Wait 3 seconds to go
     public static final double TIME_SAVE_SHOOTER = 7000;
     public static final double TIME_SHOOT = 1000; //Time to shoot (ms)
-    public static final double TIME_TO_BALL = 1500; //Distance to go to ball
+    public static final double TIME_TO_BALL = 1425; //Distance to go to ball
 
     double lastStageTime = 0;
 

@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.damronexperimental;
+package org.firstinspires.ftc.teamcode.experimental;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,7 +16,7 @@ import org.opencv.core.Size;
 /**
  * Created by gssmrobotics on 11/18/2016.
  */
-
+@Disabled
 public class BasicVisionOp extends LinearVisionOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

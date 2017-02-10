@@ -1,8 +1,10 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.tournament.Robot;
 import org.lasarobotics.vision.android.Cameras;
 import org.lasarobotics.vision.ftc.resq.Beacon;
 import org.lasarobotics.vision.ftc.resq.Constants;
@@ -17,6 +19,7 @@ import java.util.List;
 /**
  * Created by gssmrobotics on 11/21/2016.
  */
+@Disabled
 @Autonomous(name="Red Autonomoose")
 public class RedAuto extends VisionOpMode {
 
@@ -70,9 +73,10 @@ public class RedAuto extends VisionOpMode {
     @Override
     public void loop()
     {
-        telemetry.addData("State", stage);
+        telemetry.addData("State", "INITIALIZING");
         switch(stage) {
             case INIT: //Checks if the robot just started running
+                telemetry.addData("Status", "INIT BLOCK");
                 initialize();
                 //no break here to continue immediately to moving to ball
                 
@@ -82,15 +86,17 @@ public class RedAuto extends VisionOpMode {
              register the balls.
               */
             case TO_BALL:
-
+                telemetry.addData("Status", "TO_BALL BLOCK");
                 goToBall();
                 break;
+
 
             /*
             We next us the beacon hitter to push the ball away from the direction we want to go.
             This means to the right on the red side.
              */
             case BUMP_BALL:
+                telemetry.addData("Status", "BUMP_BALL BLOCK");
                 pushBall(1000);
                 break;
 

@@ -1,9 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.experimental;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 /**
  * Created by gssmrobotics on 11/21/2016.
  */
-
+@Disabled
 public class Timer {
 
     private long initTime;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -9,13 +9,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 /**
  * Created by gssmrobotics on 12/2/2016.
  */
-
-@Autonomous(name = "ShooterTest")
 @Disabled
+@Autonomous(name = "ShooterTest")
+
 public class ShooterTest extends OpMode{
 
     DcMotor shooterMotor;
 //    DcMotor motor2 = null;
+
 
     @Override
     public void init() {

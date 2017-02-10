@@ -1,12 +1,13 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.experimental;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * Created by gssmrobotics on 1/15/2017.
  */
-
+@Disabled
 public class EncoderPlayground extends OpMode {
     DcMotor motor = null;
 

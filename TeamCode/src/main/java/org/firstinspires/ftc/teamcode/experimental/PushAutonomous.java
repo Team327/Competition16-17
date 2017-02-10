@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -9,9 +9,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Created by gssmrobotics on 12/10/2016.
  */
 
-
-@Autonomous(name = "Push Autonomous")
 @Disabled
+@Autonomous(name = "Push Autonomous")
+
 public class PushAutonomous extends OpMode{
 
     DcMotor left,right;
