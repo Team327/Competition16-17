@@ -7,13 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  * Created by gssmrobotics on 1/14/2017.
  */
 
-@Autonomous(name = "Basic Autonomoose")
-public class BasicAuto extends OpMode {
+@Autonomous(name = "No Delay Autonomoose")
+public class NoDelayAuto extends OpMode {
     Robot robot;
 
     boolean lastShooterFixerPositive = true;
 
-    public enum State {NULL, DELAY, SHOOT,SAVING_PRIVATE_SHOOTER, TO_BALL, DONE}
+    public enum State {NULL, DELAY, SHOOT, SAVING_PRIVATE_SHOOTER, TO_BALL, DONE}
+
     State stage = State.NULL;
 
     public static final double TIME_DELAY = 3000; //Wait 3 seconds to go
@@ -28,14 +29,14 @@ public class BasicAuto extends OpMode {
         robot = new Robot(hardwareMap);
         robot.reverseFront();
         stage = State.DELAY;
-        lastStageTime=0;
+        lastStageTime = 0;
     }
 
     @Override
     public void loop() {
-        if(lastStageTime==0) {
+        if (lastStageTime == 0) {
             lastStageTime = System.currentTimeMillis();
-        }else {
+        } else {
             switch (stage) {
                 case DELAY:
                     if (System.currentTimeMillis() - lastStageTime >= TIME_DELAY) {

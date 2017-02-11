@@ -98,11 +98,18 @@ public class FinalTeleOp extends OpMode
             robot.centerBeacon();
 
         if (!(gamepad2.right_trigger > 0 ^ gamepad2.left_trigger > 0))//cheeky xor - both or neither over 1
+        {
             robot.stopShooter();
-        else if (gamepad2.right_trigger > 0)//right hit, shoot
+        } else if (gamepad2.right_trigger > 0) //right hit, shoot
+        {
+            telemetry.addData("Status", System.currentTimeMillis() + ": SHOOTING");
             robot.shoot();
+        }
         else//left pressed, reverse shooter
+        {
             robot.reverseShoot();
+        }
+
     }
 
 
