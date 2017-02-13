@@ -1,10 +1,8 @@
-package org.firstinspires.ftc.teamcode.experimental;
+package org.firstinspires.ftc.teamcode.tournament;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.tournament.Robot;
 import org.lasarobotics.vision.android.Cameras;
 import org.lasarobotics.vision.ftc.resq.Beacon;
 import org.lasarobotics.vision.ftc.resq.Constants;
@@ -19,7 +17,7 @@ import java.util.List;
 /**
  * Created by gssmrobotics on 11/21/2016.
  */
-@Disabled
+
 @Autonomous(name="Red Autonomoose")
 public class RedAuto extends VisionOpMode {
 

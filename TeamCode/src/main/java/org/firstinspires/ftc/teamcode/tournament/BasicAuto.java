@@ -16,10 +16,10 @@ public class BasicAuto extends OpMode {
     public enum State {NULL, DELAY, SHOOT,SAVING_PRIVATE_SHOOTER, TO_BALL, DONE}
     State stage = State.NULL;
 
-    public static final double TIME_DELAY = 3000; //Wait 3 seconds to go
+    public static final double TIME_DELAY = 13000; //Wait 3 seconds to go (now 13 delay for FMJ)
     public static final double TIME_SAVE_SHOOTER = 7000;
-    public static final double TIME_SHOOT = 1000; //Time to shoot (ms)
-    public static final double TIME_TO_BALL = 1425; //Distance to go to ball
+    public static final double TIME_SHOOT = 2000; //Time to shoot (ms)
+    public static final double TIME_TO_BALL = 1475; //Distance to go to ball
 
     double lastStageTime = 0;
 

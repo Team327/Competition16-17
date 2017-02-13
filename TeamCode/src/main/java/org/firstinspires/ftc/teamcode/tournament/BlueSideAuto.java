@@ -19,9 +19,11 @@ public class BlueSideAuto extends OpMode {
 
     public static final double TIME_DELAY = 8000;
     public static final double TIME_SHOOT = 1000;
-    public static final double TIME_FORWARD_1 = 300;
-    public static final double TIME_BACK_LEFT = 200;
-    public static final double TIME_BACK_RIGHT = 200;
+    public static final double TIME_FORWARD_1 = 8000;
+    public static final double TIME_BACK_LEFT = 400;
+    public static final double TIME_BACK_RIGHT = 400;
+    public static final double STRONGER_POWER = 1.0; //Power of stronger motor when turning
+    public static final double WEAKER_POWER = 0.7; //Power of weaker motor when turning
 
     double lastStageTime = 0;
 
@@ -67,8 +69,8 @@ public class BlueSideAuto extends OpMode {
                     break;
                 case BACK_RIGHT:
                     if (System.currentTimeMillis() - lastStageTime < TIME_BACK_RIGHT) {
-                        robot.setRightPower(-.8);
-                        robot.setLeftPower(-1);
+                        robot.setRightPower(-WEAKER_POWER);
+                        robot.setLeftPower(-STRONGER_POWER);
                     } else {
                         stage = State.BACK_LEFT;
                         lastStageTime = System.currentTimeMillis();
@@ -76,8 +78,8 @@ public class BlueSideAuto extends OpMode {
                     break;
                 case BACK_LEFT:
                     if (System.currentTimeMillis() - lastStageTime < TIME_BACK_LEFT) {
-                        robot.setRightPower(-1);
-                        robot.setLeftPower(-.8);
+                        robot.setRightPower(-STRONGER_POWER);
+                        robot.setLeftPower(-WEAKER_POWER);
                     } else {
                         stage = State.STOP;
                         lastStageTime = System.currentTimeMillis();
