@@ -59,8 +59,9 @@ public class RedAuto extends VisionOpMode {
     static final double PRESSED_DISTANCE = 0.1; //Optical sensor light/maxLight when pressed //TODO find experimentally
     static final double PRESS_RATE = 0.01; //Change servo distance between loop iterations //TODO find experimentally
 
-    public enum STATE {INIT,TO_BALL,BUMP_BALL,FIND_BEACON_1,MOVE_BEACON_1,CLOSE_TO_BEACON_1,HIT_BEACON_1,DONE}
-    public STATE stage = STATE.INIT;
+    public enum STATE {TO_BALL, BUMP_BALL, FIND_BEACON_1, MOVE_BEACON_1, CLOSE_TO_BEACON_1, HIT_BEACON_1, DONE, NULL}
+
+    public STATE stage = STATE.NULL;
 
     //Time constants for autoadvance of autonomous mode
     public static final int TIME_BALL = 2000;
@@ -69,15 +70,15 @@ public class RedAuto extends VisionOpMode {
     public static final int TIME_TO_LEAVE_BEACON_1 = 5000;
 
     @Override
+    public void init() {
+        telemetry.addData("State", "INITIALIZING");
+        initialize();
+    }
+
+    @Override
     public void loop()
     {
-        telemetry.addData("State", "INITIALIZING");
         switch(stage) {
-            case INIT: //Checks if the robot just started running
-                telemetry.addData("Status", "INIT BLOCK");
-                initialize();
-                //no break here to continue immediately to moving to ball
-                
                 
             /*
              We will drive directly at the ball until the distance sensors on the beacon hitter
@@ -140,6 +141,8 @@ public class RedAuto extends VisionOpMode {
                 break;
             case DONE:
                 stop();
+            case NULL:
+                logTelemetry();
         }
     }
 
@@ -193,6 +196,7 @@ public class RedAuto extends VisionOpMode {
 
         //set the current state to TO_BALL to begin moving toward it
         stage = STATE.TO_BALL;
+        //stage = STATE.NULL; //TODO remove this to do the real deal
     }
 
     /*
@@ -389,5 +393,11 @@ public class RedAuto extends VisionOpMode {
 //            robot.correctBeacon(change);
 //        }
 
+    }
+
+    void logTelemetry() {
+        Beacon.BeaconAnalysis anal = beacon.getAnalysis();
+        telemetry.addData("Beacon Detected", anal.isBeaconFound());
+        telemetry.addData("Beacon Center", anal.getBoundingBox());
     }
 }
