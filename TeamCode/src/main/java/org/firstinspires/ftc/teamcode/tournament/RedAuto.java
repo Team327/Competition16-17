@@ -32,8 +32,8 @@ public class RedAuto extends VisionOpMode {
 
     //stuff for find_beacon_1
     LinkedList<Double> slidingConfidence = null;
-    static final double MIN_CONFIDENCE_MEAN = 0.50; //TODO determine value
-    static final int CONFIDENCE_WINDOW_PERIOD = 5; //TODO determine optimum
+    static final double MIN_CONFIDENCE_MEAN = 0.20; //TODO determine value
+    static final int CONFIDENCE_WINDOW_PERIOD = 50; //TODO determine optimum
 
     //stuff for move_beacon_1
     boolean startedToBeacon1 = false; //set to true as soon as it starts
@@ -42,7 +42,7 @@ public class RedAuto extends VisionOpMode {
     double Kp = 1; //Proportional constant //TODO find experimentally
     double Kd = -1; //Differntial constant (negative) //TODO find experimentally
     static final double FRAME_SIZE_BUFFER = 0; //Amount of space between frame height and beacon height before moving on //TODO find experimentally
-    static final double MIN_CONFIDENCE = 0.40; //TODO determine experimentally
+    static final double MIN_CONFIDENCE = 0.2; //TODO determine experimentally
 
     //stuff for close_to_beacon_1
     boolean startedCloseToBeacon1 = false;
@@ -106,6 +106,7 @@ public class RedAuto extends VisionOpMode {
                 center beacon on camera by moving servo and center servo on robot
                     robot should directly face the beacon
                  */
+                telemetry.addData("Status", "findBeacon");
                 findBeacon();
                 break;
 
@@ -120,6 +121,7 @@ public class RedAuto extends VisionOpMode {
 
                 Identify which side is red, for hitting beacon
                 */
+                telemetry.addData("Status", "gotoBeacon");
                 goToBeacon();
                 break;
 
@@ -130,6 +132,7 @@ public class RedAuto extends VisionOpMode {
                 Use sensors on top to get aligned with beacon more and sense distance as driving forward
                 Use same PD controller as MOVE_BEACON_1
                  */
+                telemetry.addData("Status", "gotoLastStretch");
                 gotoLastStretch();
                 break;
 
@@ -137,9 +140,11 @@ public class RedAuto extends VisionOpMode {
                 /*
                 Use identification of the beacon to hit the correct side
                  */
+                telemetry.addData("Status", "clickBeacon");
                 clickBeacon();
                 break;
             case DONE:
+                telemetry.addData("Status", "done");
                 stop();
             case NULL:
                 logTelemetry();
@@ -227,11 +232,10 @@ public class RedAuto extends VisionOpMode {
      */
     void pushBall(long duration) {
         robot.reverseShoot();
-        if(System.currentTimeMillis()-lastStageStart>1000)
-        {
+        if (System.currentTimeMillis() - lastStageStart > 1000) {
             robot.stopShooter();
-            stage=STATE.FIND_BEACON_1;
-            lastStageStart=System.currentTimeMillis(); //save the time of the change
+            stage = STATE.FIND_BEACON_1;
+            lastStageStart = System.currentTimeMillis(); //save the time of the change
         }
     }
 
@@ -243,7 +247,7 @@ public class RedAuto extends VisionOpMode {
         }
         double confidence = beacon.getAnalysis().getConfidence();
         slidingConfidence.add(confidence);
-        if(slidingConfidence.size() < CONFIDENCE_WINDOW_PERIOD) {
+        if (slidingConfidence.size() > CONFIDENCE_WINDOW_PERIOD) {
             slidingConfidence.remove(0);
         }
         double meanConfidence = mean(slidingConfidence);
@@ -253,9 +257,12 @@ public class RedAuto extends VisionOpMode {
             lastStageStart = System.currentTimeMillis();
         } else {
             //TODO Which way we turnin here???
-            robot.setRightPower(.1);
-            robot.setLeftPower(-.1);
+            robot.setRightPower(-0.1);
+            robot.setLeftPower(0.1);
         }
+        telemetry.addData("Confidence", confidence);
+        telemetry.addData("Confidence Array", slidingConfidence);
+        telemetry.addData("Mean confidence", meanConfidence);
 
         //TODO test this
     }
@@ -270,7 +277,7 @@ public class RedAuto extends VisionOpMode {
         for(double value : data) {
             sum += value;
         }
-        return sum / data.size();
+        return data.size() != 0 ? sum / data.size() : 0;
     }
 
     /**
@@ -302,6 +309,9 @@ public class RedAuto extends VisionOpMode {
 
         Beacon.BeaconAnalysis anal = beacon.getAnalysis();
         Size frameSize = getFrameSize();
+
+        telemetry.addData("Confidence", anal.getConfidenceString());
+
         if(anal.isBeaconFound() && anal.getConfidence() > MIN_CONFIDENCE) {
             double beaconHeight = anal.getHeight();
             double beaconWidth = anal.getWidth();
@@ -327,6 +337,10 @@ public class RedAuto extends VisionOpMode {
                 robot.setRightPower(Range.clip(1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
                 prevError = error;
                 prevTime = time;
+
+                telemetry.addData("Proportional Error", error);
+                telemetry.addData("Differential Error", diff);
+                telemetry.addData("Steering", steering);
             } else {
                 prevError = error; //If this is the first time, only get the error to prevError
                 prevTime = time;
