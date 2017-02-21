@@ -38,21 +38,25 @@ public class Robot {
         return dist.getLightDetected();
     }
 
+    @Deprecated
     public void hitRightBeacon()
     {
         beaconHitter.setPower(.325);
     }
 
+    @Deprecated
     public void hitLeftBeacon ()
     {
         beaconHitter.setPower(-.325);
     }
 
+    @Deprecated
     public void centerBeacon ()
     {
         beaconHitter.setPower(0);
     }
 
+    @Deprecated
     public double getBeaconPosition () {
         return beaconHitter.getCurrentPosition();
     }
