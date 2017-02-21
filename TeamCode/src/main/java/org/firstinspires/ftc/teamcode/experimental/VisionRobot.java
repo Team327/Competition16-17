@@ -15,10 +15,32 @@ import org.opencv.core.Size;
  */
 
 public class VisionRobot extends Robot {
-    private boolean busy = false; //True when in the middle of an action
+    private State state = State.BUSY;
     private VisionOpMode opMode = null;
 
     private long lastStageTime = 0;
+
+    private double beaconConfidence = 0; //TODO real value or set in init
+    private double initialBeaconConfidence = 0; //TODO real value
+    private int slidingConfidencePeriod = 1; //TODO real value
+
+    /**
+     * Current state or state of previous action
+     */
+    public enum State {
+        BUSY, //Robot is in the middle of a task
+        SUCCESS, //Last action was successful
+        FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
+        FAILURE_TIMEOUT, //Robot timed out on previous task
+        CANCELLED //Previous action was cancelled
+    }
+
+    /**
+     * Alliance enum for use in hitting techniques
+     */
+    public enum Alliance {
+        RED, BLUE
+    }
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -32,7 +54,7 @@ public class VisionRobot extends Robot {
 
     /**
      * Initialize vision stuff (Except enableExtension() calls)
-     * <p>
+     *
      * The following must be in opmode initialization before this call:
      * """
      * enableExtension(Extensions.BEACON);         //Beacon detection
@@ -66,14 +88,11 @@ public class VisionRobot extends Robot {
     }
 
     /**
-     * Is the robot busy? (Desccriptive commenting thanks to FIRST API)
-     * <p>
-     * (It actually returns true if the robot is in the middle of a multi-step process)
-     *
+     * Is the robot busy? (Descriptive commenting thanks to FIRST API)
      * @return Returns true if the robot is busy
      */
     public boolean isBusy() {
-        return busy;
+        return state == State.BUSY;
     }
 
     /**
@@ -83,5 +102,102 @@ public class VisionRobot extends Robot {
         //TODO
     }
 
+    /**
+     * navigates to beacon (until beacon goes out of camera view)
+     *
+     * @param Kp      proportional constant
+     * @param Kd      differential constant
+     * @param maxTime max time to go before quitting
+     */
+    public void PDtoBeacon(double Kp, double Kd, double maxTime) {
+        //TODO
+    }
 
+    /**
+     * Sets beacon confidence
+     *
+     * @param beaconConfidence Minimum confidence which must be maintained to continue navigation
+     */
+    public void setBeaconConfidence(double beaconConfidence) {
+        this.beaconConfidence = beaconConfidence;
+    }
+
+    /**
+     * Sets initial beacon confidence
+     *
+     * @param initialBeaconConfidence Minimum confidence which must be maintained to start navigation
+     */
+    public void setInitialBeaconConfidence(double initialBeaconConfidence) {
+        this.initialBeaconConfidence = initialBeaconConfidence;
+    }
+
+    /**
+     * Drives until beacon is found or failure due to timeout
+     *
+     * @param leftPower  Power of left side (with camera end as front)
+     * @param rightPower Power of right side (with camera end as front)
+     */
+    public void detectBeacon(double leftPower, double rightPower) {
+        //TODO
+    }
+
+    /**
+     * Drive a certain amount of time with constant power
+     *
+     * @param leftPower  Left drive power (with camera end as front)
+     * @param rightPower Right drive power (with camera end as front)
+     * @param time
+     */
+    public void timeDrive(double leftPower, double rightPower, long time) {
+        //TODO
+    }
+
+    /**
+     * Gets beacon color (in nicely packaged object from lasarobotics)
+     *
+     * @return Returns BeaconColor object for raw use (will be used a lot later)
+     */
+    public Beacon.BeaconColor beaconColor() {
+        //TODO (and decide if this is what we want)
+        return null;
+    }
+
+    /**
+     * Hits beacon from close up (should be called after PDtoBeacon)
+     *
+     * @param leftPower  Left motor power (with camera as front)
+     * @param rightPower Right motor power (with camera as front)
+     * @param maxTime    Max time to drive before failure due to timeout
+     */
+    public void hitBeacon(double leftPower, double rightPower, long maxTime) {
+        //TODO
+    }
+
+    /**
+     * Backs up from beacon to
+     *
+     * @param leftPower  Left motor power (with camera as front)
+     * @param rightPower Right motor power (with camera as front)
+     * @param time       Time to drive before stopping
+     */
+    public void backupFromBeacon(double leftPower, double rightPower, long time) {
+        //TODO
+    }
+
+    /**
+     * Determines if the beacon needs to be clicked
+     *
+     * @param alliance Alliance color
+     */
+    public void needToClick(Alliance alliance) {
+        //TODO
+        //TODO if beacon confidence is below threshold possibly tech failure but still return
+    }
+
+    /**
+     * Logs a ton of data to telemetry (i.e. beacon location details)
+     */
+    public void logData() {
+        //TODO
+    }
 }
