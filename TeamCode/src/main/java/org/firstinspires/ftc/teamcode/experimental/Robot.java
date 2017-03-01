@@ -11,9 +11,9 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 
 public class Robot {
-    private DcMotor leftMotor,rightMotor,shooter,sideFlipperMotor,beaconHitter;
-    private OpticalDistanceSensor dist;
-    private Boolean forward = true;
+    protected DcMotor leftMotor, rightMotor, shooter, sideFlipperMotor, beaconHitter;
+    protected OpticalDistanceSensor dist;
+    protected Boolean forward = true;
 
     public Robot(HardwareMap map)
     {

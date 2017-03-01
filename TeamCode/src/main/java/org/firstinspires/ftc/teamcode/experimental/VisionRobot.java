@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.lasarobotics.vision.android.Cameras;
 import org.lasarobotics.vision.ftc.resq.Beacon;
@@ -10,12 +11,15 @@ import org.lasarobotics.vision.opmode.extensions.CameraControlExtension;
 import org.lasarobotics.vision.util.ScreenOrientation;
 import org.opencv.core.Size;
 
+import java.util.LinkedList;
+
 /**
  * Created by gssmrobotics on 2/20/2017.
  */
 
 public class VisionRobot extends Robot {
-    private State state = State.BUSY;
+    private State state = State.BUSY; //state of robot
+    private boolean actionStarted = false; //denotes if an action needs to be initialized
     private VisionOpMode opMode = null;
 
     private long lastStageTime = 0;
@@ -23,6 +27,9 @@ public class VisionRobot extends Robot {
     private double beaconConfidence = 0; //TODO real value or set in init
     private double initialBeaconConfidence = 0; //TODO real value
     private int slidingConfidencePeriod = 1; //TODO real value
+    private int frameSizeBuffer = 0; //TODO find good value and figure out scale issues
+
+    private LinkedList<Double> slidingConfidence = null; //TODO initialize
 
     /**
      * Current state or state of previous action
@@ -50,6 +57,8 @@ public class VisionRobot extends Robot {
      */
     public VisionRobot(HardwareMap map, VisionOpMode opMode) {
         super(map);
+        this.opMode = opMode;
+        //TODO init() ?
     }
 
     /**
@@ -84,7 +93,6 @@ public class VisionRobot extends Robot {
         //camera control extension specifications
         opMode.cameraControl.setColorTemperature(CameraControlExtension.ColorTemperature.AUTO);
         opMode.cameraControl.setManualExposureCompensation(Constants.EXPO_COMP);
-        ////thus ends the camera initialization
     }
 
     /**
@@ -95,11 +103,17 @@ public class VisionRobot extends Robot {
         return state == State.BUSY;
     }
 
+    public State getState() {
+        return state;
+    }
+
     /**
      * Cancels any action currently going on (mostly for emergencies)
      */
     public void cancel() {
-        //TODO
+        leftMotor.setPower(0);
+        rightMotor.setPower(0);
+        state = State.CANCELLED;
     }
 
     /**
@@ -110,7 +124,65 @@ public class VisionRobot extends Robot {
      * @param maxTime max time to go before quitting
      */
     public void PDtoBeacon(double Kp, double Kd, double maxTime) {
-        //TODO
+        if (state == State.BUSY) {
+
+        }
+
+        //////////////////TODO condition whether or not to initialize based on init boolean
+
+        Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
+        Size frameSize = opMode.getFrameSize();
+
+        opMode.telemetry.addData("Confidence", anal.getConfidenceString());
+
+        if (anal.isBeaconFound() && anal.getConfidence() > beaconConfidence) {
+            double beaconHeight = anal.getHeight();
+            double beaconWidth = anal.getWidth();
+            double frameHeight = frameSize.height;
+            double frameWidth = frameSize.width;
+            if (frameHeight - beaconHeight >= frameSizeBuffer
+                    || frameWidth - beaconWidth >= frameSizeBuffer) {
+                state = State.SUCCESS;
+            }
+            //TODO use telemetry to ensure that frame size and beacon size are the same scale
+
+            double beaconCenterX = anal.getCenter().x; //beacon center x
+            double frameCenterX = frameSize.width / 2; //frame center x
+            double error = frameCenterX - beaconCenterX; //error in x from beacon (right is positive)
+
+            double time = System.nanoTime();
+
+            //TODO finish changing stuff to prevent errors from here down!
+            if (startedToBeacon1) {
+                double diff = (error - prevError) / (time - prevTime); //error differential
+                double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
+                robot.setLeftPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
+                robot.setRightPower(Range.clip(1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
+                prevError = error;
+                prevTime = time;
+
+//                telemetry.addData("Proportional Error", error);
+//                telemetry.addData("Differential Error", diff);
+//                telemetry.addData("Steering", steering);
+            } else {
+                prevError = error; //If this is the first time, only get the error to prevError
+                prevTime = time;
+                startedToBeacon1 = true;
+            }
+
+            if (anal.isRightRed()) {
+                rightRed++; //Add to right count if right is red
+            }
+
+            if (anal.isLeftRed()) {
+                leftRed++; //Add to left count if left is red
+            }
+        } else {
+            //TODO if beacon not found (this is temporary and is stopping not ideal)
+            robot.brake();
+        }
+
+
     }
 
     /**
