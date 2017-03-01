@@ -10,7 +10,7 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 @TeleOp(name = "Vision Teleop")
 public class VisionTeleOp extends VisionOpMode {
     VisionRobot VisionBot;
-    private final FinalTeleOp;
+    //private final FinalTeleOp;
     /**
      * Tank Drive System Description
      *
@@ -40,9 +40,9 @@ public class VisionTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
-        FinalTeleOp Teleop;
+        //FinalTeleOp Teleop;
 
-        Teleop.loop();
+        //Teleop.loop();
 
     }
 }
