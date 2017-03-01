@@ -42,6 +42,12 @@ public class VisionRobot extends Robot {
         CANCELLED //Previous action was cancelled
     }
 
+    public enum FUNCTION {
+        NONE, //Absolutely nothing
+        PD_BEACON, //PID to beacon
+
+    }
+
     /**
      * Alliance enum for use in hitting techniques
      */
@@ -153,35 +159,34 @@ public class VisionRobot extends Robot {
             double time = System.nanoTime();
 
             //TODO finish changing stuff to prevent errors from here down!
-            if (startedToBeacon1) {
-                double diff = (error - prevError) / (time - prevTime); //error differential
-                double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
-                robot.setLeftPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
-                robot.setRightPower(Range.clip(1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
-                prevError = error;
-                prevTime = time;
-
-//                telemetry.addData("Proportional Error", error);
-//                telemetry.addData("Differential Error", diff);
-//                telemetry.addData("Steering", steering);
-            } else {
-                prevError = error; //If this is the first time, only get the error to prevError
-                prevTime = time;
-                startedToBeacon1 = true;
-            }
-
-            if (anal.isRightRed()) {
-                rightRed++; //Add to right count if right is red
-            }
-
-            if (anal.isLeftRed()) {
-                leftRed++; //Add to left count if left is red
-            }
-        } else {
-            //TODO if beacon not found (this is temporary and is stopping not ideal)
-            robot.brake();
+//            if (startedToBeacon1) {
+//                double diff = (error - prevError) / (time - prevTime); //error differential
+//                double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
+//                robot.setLeftPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
+//                robot.setRightPower(Range.clip(1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
+//                prevError = error;
+//                prevTime = time;
+//
+////                telemetry.addData("Proportional Error", error);
+////                telemetry.addData("Differential Error", diff);
+////                telemetry.addData("Steering", steering);
+//            } else {
+//                prevError = error; //If this is the first time, only get the error to prevError
+//                prevTime = time;
+//                startedToBeacon1 = true;
+//            }
+//
+//            if (anal.isRightRed()) {
+//                rightRed++; //Add to right count if right is red
+//            }
+//
+//            if (anal.isLeftRed()) {
+//                leftRed++; //Add to left count if left is red
+//            }
+//        } else {
+//            //TODO if beacon not found (this is temporary and is stopping not ideal)
+//            robot.brake();
         }
-
 
     }
 
