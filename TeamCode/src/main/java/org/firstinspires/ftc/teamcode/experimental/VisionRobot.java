@@ -12,14 +12,14 @@ import org.lasarobotics.vision.util.ScreenOrientation;
 import org.opencv.core.Size;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by gssmrobotics on 2/20/2017.
  */
 
 public class VisionRobot extends Robot {
-    private State state = State.BUSY; //state of robot
-    private boolean actionStarted = false; //denotes if an action needs to be initialized
+    private State state = null; //state of robot
     private VisionOpMode opMode = null;
 
     private long lastStageTime = 0;
@@ -31,29 +31,7 @@ public class VisionRobot extends Robot {
 
     private LinkedList<Double> slidingConfidence = null; //TODO initialize
 
-    /**
-     * Current state or state of previous action
-     */
-    public enum State {
-        BUSY, //Robot is in the middle of a task
-        SUCCESS, //Last action was successful
-        FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
-        FAILURE_TIMEOUT, //Robot timed out on previous task
-        CANCELLED //Previous action was cancelled
-    }
-
-    public enum FUNCTION {
-        NONE, //Absolutely nothing
-        PD_BEACON, //PID to beacon
-
-    }
-
-    /**
-     * Alliance enum for use in hitting techniques
-     */
-    public enum Alliance {
-        RED, BLUE
-    }
+    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE};
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -65,6 +43,40 @@ public class VisionRobot extends Robot {
         super(map);
         this.opMode = opMode;
         //TODO init() ?
+
+        //PDtoBeacon stuff
+        slidingConfidence = new LinkedList<>();
+    }
+
+    public boolean contains(State[] list, State item) {
+        for(State i : list) {
+            if(item == i) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Current state or state of previous action
+     */
+    public enum State {
+        PD_BEACON, //Robot is in the middle of PD
+        TIME_DRIVE, //Robot is in middle of timeDrive method
+        SUCCESS, //Last action was successful
+        FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
+        FAILURE_TIMEOUT, //Robot timed out on previous task
+        CANCELLED //Previous action was cancelled
+    }
+
+    private void setState(State state) {
+        this.state = state;
+        lastStageTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Alliance enum for use in hitting techniques
+     */
+    public enum Alliance {
+        RED, BLUE
     }
 
     /**
@@ -106,8 +118,8 @@ public class VisionRobot extends Robot {
      * @return Returns true if the robot is busy
      */
     public boolean isBusy() {
-        return state == State.BUSY;
-    }
+        return contains(busyStates, state);
+    } //TODO fix this to use others
 
     public State getState() {
         return state;
@@ -120,6 +132,7 @@ public class VisionRobot extends Robot {
         leftMotor.setPower(0);
         rightMotor.setPower(0);
         state = State.CANCELLED;
+        //TODO
     }
 
     /**
@@ -127,10 +140,10 @@ public class VisionRobot extends Robot {
      *
      * @param Kp      proportional constant
      * @param Kd      differential constant
-     * @param maxTime max time to go before quitting
+     * @param maxTime max time to go before quitting millis
      */
     public void PDtoBeacon(double Kp, double Kd, double maxTime) {
-        if (state == State.BUSY) {
+        if (state == State.SUCCESS) { //TODO TODO TODO fix this
 
         }
 
@@ -156,7 +169,7 @@ public class VisionRobot extends Robot {
             double frameCenterX = frameSize.width / 2; //frame center x
             double error = frameCenterX - beaconCenterX; //error in x from beacon (right is positive)
 
-            double time = System.nanoTime();
+            double time = System.currentTimeMillis();
 
             //TODO finish changing stuff to prevent errors from here down!
 //            if (startedToBeacon1) {
@@ -191,6 +204,14 @@ public class VisionRobot extends Robot {
     }
 
     /**
+     * Calculates error of beacon position for use in PD to beacon based on beacon position if found
+     * @return Returns error of beacon (left negative, right positive)
+     */
+    private double error() {
+        return 0; //TODO calculate error and call this from PDtoBeacon
+    }
+
+    /**
      * Sets beacon confidence
      *
      * @param beaconConfidence Minimum confidence which must be maintained to continue navigation
@@ -214,7 +235,7 @@ public class VisionRobot extends Robot {
      * @param leftPower  Power of left side (with camera end as front)
      * @param rightPower Power of right side (with camera end as front)
      */
-    public void detectBeacon(double leftPower, double rightPower) {
+    public void detectBeacon(double leftPower, double rightPower, long time) {
         //TODO
     }
 
@@ -226,7 +247,20 @@ public class VisionRobot extends Robot {
      * @param time
      */
     public void timeDrive(double leftPower, double rightPower, long time) {
-        //TODO
+        if(!isBusy()) {
+            setState(State.TIME_DRIVE); //Set state to start going with this op
+        } else {
+            if(state == State.TIME_DRIVE) {
+                if(System.currentTimeMillis() >= lastStageTime + time) {
+                    setState(State.SUCCESS);
+                } else {
+                    this.setLeftPower(leftPower); //TODO check that these are in the same direction
+                    this.setRightPower(rightPower);
+                }
+            } else {
+                return; //return so not to disturb another op //TODO can we just disregard bad ops?
+            }
+        }
     }
 
     /**
@@ -276,5 +310,6 @@ public class VisionRobot extends Robot {
      */
     public void logData() {
         //TODO
+        opMode.telemetry.addData("VisionRobotStatus", "Thoroughly incomplete");
     }
 }
