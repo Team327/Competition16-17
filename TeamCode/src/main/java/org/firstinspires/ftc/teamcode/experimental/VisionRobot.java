@@ -249,17 +249,18 @@ public class VisionRobot extends Robot {
     public void timeDrive(double leftPower, double rightPower, long time) {
         if(!isBusy()) {
             setState(State.TIME_DRIVE); //Set state to start going with this op
-        } else {
-            if(state == State.TIME_DRIVE) {
-                if(System.currentTimeMillis() >= lastStageTime + time) {
-                    setState(State.SUCCESS);
-                } else {
-                    this.setLeftPower(leftPower); //TODO check that these are in the same direction
-                    this.setRightPower(rightPower);
-                }
+        }
+        if(state == State.TIME_DRIVE) {
+            if(System.currentTimeMillis() >= lastStageTime + time) {
+                //Time's up - it's done driving
+                setState(State.SUCCESS);
             } else {
-                return; //return so not to disturb another op //TODO can we just disregard bad ops?
+                //continue driving
+                this.setLeftPower(leftPower); //TODO check that these are in the same direction
+                this.setRightPower(rightPower);
             }
+        } else {
+            return; //return so not to disturb another op //TODO can we just disregard bad ops?
         }
     }
 
