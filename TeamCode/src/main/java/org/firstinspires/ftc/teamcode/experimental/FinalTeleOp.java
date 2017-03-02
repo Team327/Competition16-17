@@ -2,6 +2,10 @@ package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by gssmrobotics on 12/9/2016.
@@ -24,7 +28,8 @@ public class FinalTeleOp extends OpMode
      *          Flipper down
      *      B:
      *          Flipper up
-     *
+     *      Bumpers:
+     *          Invert drive
      *
      * Gamepad 2 (Operator):
      *      Triggers:
@@ -43,6 +48,14 @@ public class FinalTeleOp extends OpMode
     {
         robot = new Robot(hardwareMap);
         lastFrontChange = System.currentTimeMillis();
+    }
+    public void makeInit(Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry, HardwareMap hardwareMap)
+    {
+        this.gamepad1 = gamepad1;
+        this.gamepad2 = gamepad2;
+        this.telemetry = telemetry;
+        this.hardwareMap = hardwareMap;
+        this.init();
     }
 
     @Override
