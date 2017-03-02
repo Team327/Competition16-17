@@ -130,7 +130,11 @@ public class VisionTeleOp extends VisionOpMode {
         }
 
         //Drives for the driveTime
-
+        if(gamepad1.back)
+        {
+            pressed = true;
+            visionBot.timeDrive(0.7,0.7, driveTime);
+        }
 
         //cancels any action if no button is pressed
         //every function declares pressed true - therefore, it will not cancel
