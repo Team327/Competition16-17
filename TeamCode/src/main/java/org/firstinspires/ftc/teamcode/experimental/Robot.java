@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
  * Created by gssmrobotics on 1/17/2017.
@@ -12,8 +16,8 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 public class Robot {
     protected DcMotor leftMotor, rightMotor, shooter, sideFlipperMotor, beaconHitter;
-    protected OpticalDistanceSensor dist;
     protected Boolean forward = true;
+    protected ModernRoboticsI2cRangeSensor frontDist;
 
     public Robot(HardwareMap map)
     {
@@ -22,20 +26,27 @@ public class Robot {
         shooter = map.dcMotor.get("shooter");
         sideFlipperMotor = map.dcMotor.get("flipper");
         beaconHitter = map.dcMotor.get("beacon");
+        frontDist = (ModernRoboticsI2cRangeSensor) map.i2cDeviceSynch.get("frontDist");
 
         beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        dist = map.opticalDistanceSensor.get("dist");
-
-        dist.enableLed(true);
     }
 
+    @Deprecated
     public double getDist()
     {
-        return dist.getLightDetected();
+        return getFrontDist();
+    }
+
+    /**
+     * Uses range sensor to find distance from front sensor
+     * @return returns distance in cm detected by front sensor
+     */
+    public double getFrontDist()
+    {
+        return frontDist.getDistance(DistanceUnit.CM);
     }
 
     @Deprecated
@@ -126,5 +137,9 @@ public class Robot {
     public void setShooterPower(double power)
     {
         shooter.setPower(power);
+    }
+
+    public void logData(Telemetry telemetry) {
+        telemetry.addData("FrontDist", getFrontDist());
     }
 }

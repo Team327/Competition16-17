@@ -129,6 +129,7 @@ public class FinalTeleOp extends OpMode
 
         }
 
+        robot.logData(telemetry);
     }
 
 

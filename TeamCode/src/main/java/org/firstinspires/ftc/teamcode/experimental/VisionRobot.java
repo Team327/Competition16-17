@@ -307,6 +307,13 @@ public class VisionRobot extends Robot {
     }
 
     /**
+     * Continues whatever action is in progress (whatever the state of the robot is)
+     */
+    public void continueAction() {
+        //TODO
+    }
+
+    /**
      * Logs a ton of data to telemetry (i.e. beacon location details)
      */
     public void logData() {
