@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.experimental;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -26,7 +27,7 @@ public class Robot {
         shooter = map.dcMotor.get("shooter");
         sideFlipperMotor = map.dcMotor.get("flipper");
         beaconHitter = map.dcMotor.get("beacon");
-        frontDist = (ModernRoboticsI2cRangeSensor) map.i2cDeviceSynch.get("frontDist");
+        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
 
         beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

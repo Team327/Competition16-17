@@ -141,7 +141,7 @@ public class VisionTeleOp extends VisionOpMode {
 
         else if(gamepad1.dpad_right && !prevDRight)
         {
-            driveTime -= driveTimeInterval;
+            driveTime += driveTimeInterval;
 
             prevDRight = gamepad1.dpad_right;
         }
