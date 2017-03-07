@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.lasarobotics.vision.opmode.VisionOpMode;
 
@@ -15,7 +16,8 @@ public class VisionTeleOp extends VisionOpMode {
     private double Kd;
     private int driveTime;
     private int driveTimeInterval;
-
+    private boolean prevDLeft;
+    private boolean prevDRight;
     /**
      * Tank Drive System Description
      *
@@ -65,8 +67,17 @@ public class VisionTeleOp extends VisionOpMode {
 
         driveTime = 1000;
         driveTimeInterval = 500;
+        prevDLeft = false;
+        prevDRight = false;
     }
 
+    public boolean pressed(Gamepad g)
+    {
+        return (g.atRest() && g.left_stick_button && g.right_stick_button   //analog/trigger
+                && g.a && g.b && g.x && g.y                                 // a b x y
+                && g.dpad_left && g.dpad_right && g.dpad_up && g.dpad_down  //dpad
+                && g.start && g.back && g.guide);                           //center buttons
+    }
 
     @Override
     public void loop()
@@ -78,70 +89,80 @@ public class VisionTeleOp extends VisionOpMode {
         visionBot.logData();
 
         //says that no button is pressed
-        boolean pressed = false;
         telemetry.addData("Drive Time:", driveTime);
 
         //PD to Beacon
         if(gamepad1.y)
         {
-            pressed = true;
             visionBot.PDtoBeacon(Kp, Kd, 5000);
 
         }
 
         //Hit beacon
-        if(gamepad1.dpad_up)
+        else if(gamepad1.dpad_up)
         {
-            pressed = true;
             visionBot.hitBeacon(0.5, 0.5, 5000);
 
         }
 
         //Backup from Beacon
-        if(gamepad1.dpad_down)
+        else if(gamepad1.dpad_down)
         {
-            pressed = true;
             visionBot.backupFromBeacon(0.5, 0.5, 5000);
 
         }
 
         //Detect beacon
-        if(gamepad1.x)
+        else if(gamepad1.x)
         {
-            pressed = true;
             visionBot.detectBeacon( -0.5, 0.5, 5000);
 
         }
 
         //Timed Drive
         //Detracts from the drive time
-        if(gamepad1.dpad_left)
+
+        else if(gamepad1.dpad_left && !prevDLeft)
         {
             if(driveTime > driveTimeInterval)
             {
                 driveTime -= driveTimeInterval;
             }
+            prevDLeft = gamepad1.dpad_left;
         }
+        else if(!gamepad1.dpad_left && prevDLeft)
+        {
+            prevDLeft = gamepad1.dpad_left;
+        }
+
+
 
         //adds to the drive time
-        if(gamepad1.dpad_right)
+
+        else if(gamepad1.dpad_right && !prevDRight)
         {
-            driveTime += driveTimeInterval;
+            driveTime -= driveTimeInterval;
+
+            prevDRight = gamepad1.dpad_right;
+        }
+        else if(!gamepad1.dpad_right && prevDRight)
+        {
+            prevDRight = gamepad1.dpad_right;
         }
 
+
         //Drives for the driveTime
-        if(gamepad1.back)
+        else if(gamepad1.back)
         {
-            pressed = true;
             visionBot.timeDrive(0.7,0.7, driveTime);
         }
 
         //cancels any action if no button is pressed
         //every function declares pressed true - therefore, it will not cancel
         //  if anything is pressed
-        if(!pressed)
+        else
         {
-            visionBot.cancel();
+            visionBot.continueAction();
         }
 
     }
