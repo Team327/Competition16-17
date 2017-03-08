@@ -29,8 +29,10 @@ public class VisionTeleOp extends VisionOpMode {
      *          Flipper down
      *      B:
      *          Flipper up
-     *      Bumpers:
+     *      Right Bumper:
      *          Invert Drive
+     *      Left Bumper:
+     *          Cancel Action
      *      Y:
      *          PD to Beacon
      *      X:
@@ -43,6 +45,8 @@ public class VisionTeleOp extends VisionOpMode {
      *          Subtract from drive time
      *      Dpad Right:
      *          Add to drive time
+     *
+     *
      *
      *
      * Gamepad 2 (Operator):
@@ -155,6 +159,12 @@ public class VisionTeleOp extends VisionOpMode {
         else if(gamepad1.back)
         {
             visionBot.timeDrive(0.7,0.7, driveTime);
+        }
+
+        //Cancels action
+        else if(gamepad1.left_bumper)
+        {
+            visionBot.cancel();
         }
 
         //cancels any action if no button is pressed

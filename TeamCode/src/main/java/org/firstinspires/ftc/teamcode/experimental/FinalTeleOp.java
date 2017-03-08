@@ -28,7 +28,7 @@ public class FinalTeleOp extends OpMode
      *          Flipper down
      *      B:
      *          Flipper up
-     *      Bumpers:
+     *      Right Bumper:
      *          Invert drive
      *
      * Gamepad 2 (Operator):
@@ -67,7 +67,7 @@ public class FinalTeleOp extends OpMode
          * Sticks to drive - Tank drive
         */
 
-        if((gamepad1.right_bumper || gamepad1.left_bumper)&& System.currentTimeMillis()-lastFrontChange >300) {
+        if((gamepad1.right_bumper )&& System.currentTimeMillis()-lastFrontChange >300) {
             robot.reverseFront();
             lastFrontChange = System.currentTimeMillis();
         }
