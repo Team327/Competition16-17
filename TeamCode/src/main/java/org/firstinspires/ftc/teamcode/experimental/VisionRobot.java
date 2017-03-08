@@ -21,17 +21,28 @@ import java.util.List;
 public class VisionRobot extends Robot {
     private State state = null; //state of robot
     private VisionOpMode opMode = null;
-
     private long lastStageTime = 0;
+    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE}; //TODO add more
 
-    private double beaconConfidence = 0; //TODO real value or set in init
-    private double initialBeaconConfidence = 0; //TODO real value
-    private int slidingConfidencePeriod = 1; //TODO real value
-    private int frameSizeBuffer = 0; //TODO find good value and figure out scale issues
+    //PDtoBeacon variables
+        private double beaconConfidence = 0; //TODO real value or set in init
+        private double initialBeaconConfidence = 0; //TODO real value
+        private int slidingConfidencePeriod = 1; //TODO real value
+        private int frameSizeBuffer = 0; //TODO find good value and figure out scale issues
 
-    private LinkedList<Double> slidingConfidence = null; //TODO initialize
+        private LinkedList<Double> slidingConfidence = null; //TODO initialize
+        private boolean startedToBeacon1 = false;
+        private double prevError;
+        private double prevTime;
+        private int leftRed, rightRed;
 
-    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE};
+    //PDtoBeacon cached variables
+        private double Kp, Kd, Ki;
+        private double maxTime;
+
+    //timeDrive cached variables
+        private double leftPower, rightPower;
+        private long time;
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -143,67 +154,66 @@ public class VisionRobot extends Robot {
      * @param maxTime max time to go before quitting millis
      */
     public void PDtoBeacon(double Kp, double Kd, double maxTime) {
-        if(state != State.PD_BEACON) {
-            cancel(); //Cancel whatever previous task was running
-        }
         if(!isBusy()) { //TODO TODO TODO fix this
             //TODO initialization
+            setState(State.PD_BEACON);
+            this.Kp = Kp;
+            this.Kd = Kd;
+            this.maxTime = maxTime;
         }
+        if(state == State.PD_BEACON) {
+            Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
+            Size frameSize = opMode.getFrameSize();
 
-        //////////////////TODO condition whether or not to initialize based on init boolean
+            opMode.telemetry.addData("Confidence", anal.getConfidenceString());
 
-        Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
-        Size frameSize = opMode.getFrameSize();
+            if (anal.isBeaconFound() && anal.getConfidence() > beaconConfidence) {
+                double beaconHeight = anal.getHeight();
+                double beaconWidth = anal.getWidth();
+                double frameHeight = frameSize.height;
+                double frameWidth = frameSize.width;
+                if (frameHeight - beaconHeight >= frameSizeBuffer
+                        || frameWidth - beaconWidth >= frameSizeBuffer) {
+                    state = State.SUCCESS;
+                }
+                //TODO use telemetry to ensure that frame size and beacon size are the same scale
 
-        opMode.telemetry.addData("Confidence", anal.getConfidenceString());
+                double beaconCenterX = anal.getCenter().x; //beacon center x
+                double frameCenterX = frameSize.width / 2; //frame center x
+                double error = frameCenterX - beaconCenterX; //error in x from beacon (right is positive)
 
-        if (anal.isBeaconFound() && anal.getConfidence() > beaconConfidence) {
-            double beaconHeight = anal.getHeight();
-            double beaconWidth = anal.getWidth();
-            double frameHeight = frameSize.height;
-            double frameWidth = frameSize.width;
-            if (frameHeight - beaconHeight >= frameSizeBuffer
-                    || frameWidth - beaconWidth >= frameSizeBuffer) {
-                state = State.SUCCESS;
+                double time = System.currentTimeMillis();
+
+                //TODO finish changing stuff to prevent errors from here down!
+                if (startedToBeacon1) {
+                    double diff = (error - prevError) / (time - prevTime); //error differential
+                    double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
+                    setLeftPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
+                    setRightPower(Range.clip(1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
+                    prevError = error;
+                    prevTime = time;
+
+                    opMode.telemetry.addData("Proportional Error", error);
+                    opMode.telemetry.addData("Differential Error", diff);
+                    opMode.telemetry.addData("Steering", steering);
+                } else {
+                    prevError = error; //If this is the first time, only get the error to prevError
+                    prevTime = time;
+                    startedToBeacon1 = true;
+                }
+
+                if (anal.isRightRed()) {
+                    rightRed++; //Add to right count if right is red
+                }
+
+                if (anal.isLeftRed()) {
+                    leftRed++; //Add to left count if left is red
+                }
+            } else {
+                //TODO if beacon not found (this is temporary and is stopping not ideal)
+                brake();
             }
-            //TODO use telemetry to ensure that frame size and beacon size are the same scale
-
-            double beaconCenterX = anal.getCenter().x; //beacon center x
-            double frameCenterX = frameSize.width / 2; //frame center x
-            double error = frameCenterX - beaconCenterX; //error in x from beacon (right is positive)
-
-            double time = System.currentTimeMillis();
-
-            //TODO finish changing stuff to prevent errors from here down!
-//            if (startedToBeacon1) {
-//                double diff = (error - prevError) / (time - prevTime); //error differential
-//                double steering = Kp * error + Kd * diff; //PD steering uses error and diff times constants
-//                robot.setLeftPower(Range.clip(1 + (steering < 0 ? steering : 0), 0, 1)); //brake left if steering less than zero; clipped [0,1]
-//                robot.setRightPower(Range.clip(1 + (steering > 0 ? steering : 0), 0, 1)); //brake right if steering greater than zero; clipped [0,1]
-//                prevError = error;
-//                prevTime = time;
-//
-////                telemetry.addData("Proportional Error", error);
-////                telemetry.addData("Differential Error", diff);
-////                telemetry.addData("Steering", steering);
-//            } else {
-//                prevError = error; //If this is the first time, only get the error to prevError
-//                prevTime = time;
-//                startedToBeacon1 = true;
-//            }
-//
-//            if (anal.isRightRed()) {
-//                rightRed++; //Add to right count if right is red
-//            }
-//
-//            if (anal.isLeftRed()) {
-//                leftRed++; //Add to left count if left is red
-//            }
-//        } else {
-//            //TODO if beacon not found (this is temporary and is stopping not ideal)
-//            robot.brake();
         }
-
     }
 
     /**
@@ -269,10 +279,6 @@ public class VisionRobot extends Robot {
             return; //return so not to disturb another op //TODO can we just disregard bad ops?
         }
     }
-
-    //Cached variables for timeDrive
-    private double leftPower=0, rightPower=0;
-    private long time=0;
 
     /**
      * Gets beacon color (in nicely packaged object from lasarobotics)
