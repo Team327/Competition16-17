@@ -132,7 +132,7 @@ public class VisionRobot extends Robot {
         leftMotor.setPower(0);
         rightMotor.setPower(0);
         state = State.CANCELLED;
-        //TODO
+        //TODO set everything to defaults
     }
 
     /**
@@ -143,8 +143,11 @@ public class VisionRobot extends Robot {
      * @param maxTime max time to go before quitting millis
      */
     public void PDtoBeacon(double Kp, double Kd, double maxTime) {
-        if (state == State.SUCCESS) { //TODO TODO TODO fix this
-
+        if(state != State.PD_BEACON) {
+            cancel(); //Cancel whatever previous task was running
+        }
+        if(!isBusy()) { //TODO TODO TODO fix this
+            //TODO initialization
         }
 
         //////////////////TODO condition whether or not to initialize based on init boolean
@@ -249,6 +252,9 @@ public class VisionRobot extends Robot {
     public void timeDrive(double leftPower, double rightPower, long time) {
         if(!isBusy()) {
             setState(State.TIME_DRIVE); //Set state to start going with this op
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.time = time;
         }
         if(state == State.TIME_DRIVE) {
             if(System.currentTimeMillis() >= lastStageTime + time) {
@@ -263,6 +269,10 @@ public class VisionRobot extends Robot {
             return; //return so not to disturb another op //TODO can we just disregard bad ops?
         }
     }
+
+    //Cached variables for timeDrive
+    private double leftPower=0, rightPower=0;
+    private long time=0;
 
     /**
      * Gets beacon color (in nicely packaged object from lasarobotics)
@@ -310,7 +320,11 @@ public class VisionRobot extends Robot {
      * Continues whatever action is in progress (whatever the state of the robot is)
      */
     public void continueAction() {
-        //TODO
+        switch(state) {
+            case TIME_DRIVE:
+                timeDrive(leftPower, rightPower, time);
+                break;
+        }
     }
 
     /**
