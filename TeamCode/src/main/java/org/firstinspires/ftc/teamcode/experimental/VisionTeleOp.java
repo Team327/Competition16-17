@@ -168,9 +168,7 @@ public class VisionTeleOp extends VisionOpMode {
             visionBot.cancel();
         }
 
-        //cancels any action if no button is pressed
-        //every function declares pressed true - therefore, it will not cancel
-        //  if anything is pressed
+        //continues previous action
         else
         {
             visionBot.continueAction();
