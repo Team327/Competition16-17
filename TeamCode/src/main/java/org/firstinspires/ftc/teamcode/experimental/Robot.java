@@ -29,6 +29,7 @@ public class Robot {
         beaconHitter = map.dcMotor.get("beacon");
         frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
 
+
         beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
