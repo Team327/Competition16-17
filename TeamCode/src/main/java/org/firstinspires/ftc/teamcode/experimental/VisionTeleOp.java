@@ -77,10 +77,10 @@ public class VisionTeleOp extends VisionOpMode {
 
     public boolean pressed(Gamepad g)
     {
-        return (g.atRest() && g.left_stick_button && g.right_stick_button   //analog/trigger
-                && g.a && g.b && g.x && g.y                                 // a b x y
-                && g.dpad_left && g.dpad_right && g.dpad_up && g.dpad_down  //dpad
-                && g.start && g.back && g.guide);                           //center buttons
+        return (g.atRest() || g.left_stick_button || g.right_stick_button   //analog/trigger
+                || g.a || g.b || g.x || g.y                                 // a b x y
+                || g.dpad_left || g.dpad_right || g.dpad_up || g.dpad_down  //dpad
+                || g.start || g.back || g.guide);                           //center buttons
     }
 
     @Override
