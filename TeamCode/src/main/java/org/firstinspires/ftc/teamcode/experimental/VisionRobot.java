@@ -18,6 +18,26 @@ import java.util.List;
  * Created by gssmrobotics on 2/20/2017.
  */
 
+/**
+ *
+ * TODO
+ * TODO
+ * TODO
+ * TODO
+ * TODO
+ * TODO robot still gives NullPointerException in VisionTeleOp
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
+
 public class VisionRobot extends Robot {
     private State state = null; //state of robot
     private VisionOpMode opMode = null;

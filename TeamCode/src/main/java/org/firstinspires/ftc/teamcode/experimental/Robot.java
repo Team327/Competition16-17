@@ -36,11 +36,6 @@ public class Robot {
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    @Deprecated
-    public double getDist()
-    {
-        return getFrontDist();
-    }
 
     /**
      * Uses range sensor to find distance from front sensor
@@ -51,37 +46,13 @@ public class Robot {
         return frontDist.getDistance(DistanceUnit.CM);
     }
 
-    @Deprecated
-    public void hitRightBeacon()
-    {
-        beaconHitter.setPower(.325);
-    }
-
-    @Deprecated
-    public void hitLeftBeacon ()
-    {
-        beaconHitter.setPower(-.325);
-    }
-
-    @Deprecated
-    public void centerBeacon ()
-    {
-        beaconHitter.setPower(0);
-    }
-
-    @Deprecated
-    public double getBeaconPosition () {
-        return beaconHitter.getCurrentPosition();
-    }
 
     public void shoot()
     {
-        shooter.setPower(1);
-    }
-
-    public void reverseShoot()
-    {
-        shooter.setPower(-1);
+        if(!shooter.isBusy()) {
+            shooter.resetDeviceConfigurationForOpMode();
+            shooter.setTargetPosition(1480);
+        }
     }
 
     public void stopShooter ()
