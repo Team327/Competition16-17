@@ -231,7 +231,7 @@ public class RedAuto extends VisionOpMode {
     TODO Test
      */
     void pushBall(long duration) {
-        robot.reverseShoot();
+        //robot.reverseShoot(); //Reverse shoot is deprecated in new robot
         if (System.currentTimeMillis() - lastStageStart > 1000) {
             robot.stopShooter();
             stage = STATE.FIND_BEACON_1;
