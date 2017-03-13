@@ -6,12 +6,16 @@ package org.firstinspires.ftc.teamcode.experimental;
  */
 
 public class Evil {
-    public float Q_rsqrt(float number) {
-        long i;
-        float x2, y;
-        const float threehalfs = 1.5F;
-
-        x2 = number * 0.5F;
-        y = number;
+    /**
+     * Works
+     */
+    public static double invSqrt(double x) {
+        double xhalf = 0.5d * x;
+        long i = Double.doubleToLongBits(x); //casual bit level hacking
+        i = 0x5fe6ec85e7de30daL - (i >> 1); //What the fuck
+        x = Double.longBitsToDouble(i);//Why the fuck
+        x *= (1.5d - xhalf * x * x);
+        //x *= (1.5d - xhalf * x * x); //2nd iteration for accuracy
+        return x; //how the fuck
     }
 }
