@@ -102,6 +102,7 @@ public class FinalTeleOp extends OpMode
          */
 
         if (gamepad2.right_trigger > 0) //right hit, shoot
+
         {
             robot.shoot();
         }
