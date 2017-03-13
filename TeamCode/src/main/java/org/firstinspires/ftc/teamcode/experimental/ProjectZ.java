@@ -5,6 +5,7 @@ import android.media.MediaPlayer;
 import android.media.ToneGenerator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.IOException;
 
@@ -12,7 +13,7 @@ import java.io.IOException;
  * Created by roboticsteam on 3/10/2017.
  */
 
-@Autonomous(name="ProjectZ")
+@TeleOp(name="ProjectZ")
 public class ProjectZ extends OpMode {
     /**
      * New version (plays a song while looping)

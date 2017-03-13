@@ -53,7 +53,7 @@ public class VisionRobot extends Robot {
     public VisionRobot(HardwareMap map, VisionOpMode opMode) {
         super(map);
         this.opMode = opMode;
-        //TODO init() ?
+        this.init();
 
         //PDtoBeacon stuff
         slidingConfidence = new LinkedList<>();

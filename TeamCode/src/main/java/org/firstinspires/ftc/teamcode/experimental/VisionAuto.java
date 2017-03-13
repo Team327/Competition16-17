@@ -37,22 +37,11 @@ public class VisionAuto extends LinearVisionOpMode{
 
         visRobot = new VisionRobot(hardwareMap, this);
 
-            //VisionOpMode initialization
-
-
-
-        //select camera
-        //  PRIMARY is non-selfie camera
-        this.setCamera(Cameras.PRIMARY);
-
-        //Set frame size
-        this.setFrameSize(new Size(900, 900));
-
+        ///VisionOpMode initialization
         //enable camera extensions
         enableExtension(Extensions.BEACON);         //Beacon detection
         enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
         enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
-
     }
 
     @Override
