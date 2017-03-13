@@ -52,9 +52,9 @@ public class VisionRobot extends Robot {
 
         private LinkedList<Double> slidingConfidence = null; //TODO initialize
         private boolean startedToBeacon1 = false;
-        private double prevError;
-        private double prevTime;
-        private int leftRed, rightRed;
+        private double prevError=0;
+        private double prevTime=0;
+        private int leftRed=0, rightRed=0;
 
     //PDtoBeacon cached variables
         private double Kp=0, Kd=0, Ki=0;
@@ -294,6 +294,7 @@ public class VisionRobot extends Robot {
         if(state == State.TIME_DRIVE) {
             if(System.currentTimeMillis() >= lastStageTime + time) {
                 //Time's up - it's done driving
+                cancel(); //call one function to stop everything instead of doing it myself
                 setState(State.SUCCESS);
             }
             //continue driving
