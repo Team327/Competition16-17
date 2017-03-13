@@ -73,7 +73,7 @@ public class VisionRobot extends Robot {
     public VisionRobot(HardwareMap map, VisionOpMode opMode) {
         super(map);
         this.opMode = opMode;
-        this.init();
+        //this.init(); //No no. Causes errors.
 
         //PDtoBeacon stuff
         slidingConfidence = new LinkedList<>();
@@ -120,7 +120,7 @@ public class VisionRobot extends Robot {
      * enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
      * """
      */
-    private void init() {
+    public void init() {
         //Set primary camera to main camera on back
         opMode.setCamera(Cameras.PRIMARY);
 
@@ -348,7 +348,7 @@ public class VisionRobot extends Robot {
      * Continues whatever action is in progress (whatever the state of the robot is)
      */
     public void continueAction() {
-        switch(state) {
+        switch (state) {
             case TIME_DRIVE:
                 timeDrive(leftPower, rightPower, time);
                 break;

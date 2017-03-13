@@ -36,6 +36,10 @@ public class Robot {
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+    @Deprecated
+    public double getDist() {
+        return getFrontDist();
+    }
 
     /**
      * Uses range sensor to find distance from front sensor

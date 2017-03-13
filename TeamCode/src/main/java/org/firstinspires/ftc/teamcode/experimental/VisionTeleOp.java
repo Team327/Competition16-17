@@ -63,17 +63,33 @@ public class VisionTeleOp extends VisionOpMode {
     @Override
     public void init()
     {
-        visionBot = new VisionRobot(hardwareMap, this);
-        teleOp = new FinalTeleOp();
-        teleOp.makeInit(gamepad1, gamepad2, telemetry, hardwareMap);
+        try { //TODO remove catch all - debugging only
+            visionBot = new VisionRobot(hardwareMap, this);
 
-        Kp = 1;
-        Kd = 1;
+            ///VisionOpMode initialization
+            //enable camera extensions
+            enableExtension(Extensions.BEACON);         //Beacon detection
+            enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
+            enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
+            visionBot.init();
 
-        driveTime = 1000;
-        driveTimeInterval = 500;
-        prevDLeft = false;
-        prevDRight = false;
+            teleOp = new FinalTeleOp();
+            teleOp.makeInit(gamepad1, gamepad2, telemetry, hardwareMap);
+
+            Kp = 1;
+            Kd = 1;
+
+            driveTime = 1000;
+            driveTimeInterval = 500;
+            prevDLeft = false;
+            prevDRight = false;
+        } catch(Exception e) {
+            String err = "";
+            for(StackTraceElement trace : e.getStackTrace()) {
+                err += trace.toString() + "\n";
+            }
+            telemetry.addData("Error", err);
+        }
     }
 
     public boolean pressed(Gamepad g)

@@ -42,6 +42,7 @@ public class VisionAuto extends LinearVisionOpMode{
         enableExtension(Extensions.BEACON);         //Beacon detection
         enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
         enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
+        visRobot.init();
     }
 
     @Override
