@@ -89,6 +89,7 @@ public class VisionTeleOp extends VisionOpMode {
                 err += trace.toString() + "\n";
             }
             telemetry.addData("Error", err);
+            throw e;
         }
     }
 
