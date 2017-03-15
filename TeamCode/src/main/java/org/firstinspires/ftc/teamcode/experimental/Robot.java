@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -16,52 +17,77 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
 public class Robot {
-    protected DcMotor leftMotor, rightMotor, shooter, sideFlipperMotor, beaconHitter;
+    protected DcMotor leftMotor, rightMotor, shooter, caroline, intake;
     protected Boolean forward = true;
     protected ModernRoboticsI2cRangeSensor frontDist;
+    protected Servo beaconPusher, shooterBlock, capHolder;
 
     public Robot(HardwareMap map)
     {
+        //Hardware
+            //motors
         leftMotor = map.dcMotor.get("left");
         rightMotor = map.dcMotor.get("right");
         shooter = map.dcMotor.get("shooter");
-        sideFlipperMotor = map.dcMotor.get("flipper");
-        beaconHitter = map.dcMotor.get("beacon");
         frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
+        caroline = map.dcMotor.get("caroline");
+        intake = map.dcMotor.get("intake");
+            //servos
+        beaconPusher = map.servo.get("beaconPusher");
+        shooterBlock = map.servo.get("shooterBlock");
+        capHolder = map.servo.get("capHolder");
 
-        beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            //DEPRECATED sideFlipperMotor = map.dcMotor.get("flipper");
+            //DEPRECATED beaconHitter = map.dcMotor.get("beacon");
+
+
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    }
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        caroline.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-    @Deprecated
-    public double getDist() {
-        return getFrontDist();
-    }
 
+
+            //DEPRECATED beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            //DEPRECATED sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
     /**
      * Uses range sensor to find distance from front sensor
      * @return returns distance in cm detected by front sensor
      */
+
     public double getFrontDist()
     {
         return frontDist.getDistance(DistanceUnit.CM);
     }
 
 
-    public void shoot()
-    {
-        if(!shooter.isBusy()) {
-            shooter.resetDeviceConfigurationForOpMode();
-            shooter.setTargetPosition(1480);
-        }
-    }
+
+    //SHOOTER
 
     public void stopShooter ()
     {
         shooter.setPower(0);
     }
+
+
+    public void setShooterPower(double power)
+    {
+        shooter.setPower(power);
+    }
+
+    public void liftBlock()
+    {
+
+    }
+
+    public void lowerBlock()
+    {
+
+    }
+
+    //DRIVETRAIN
 
     public void setRightPower(double speed)
     {
@@ -98,24 +124,57 @@ public class Robot {
         forward = false;
     }
 
-    public void flipIn() {
-        sideFlipperMotor.setPower(.4);
-    }
 
-    public void flipOut() {
-        sideFlipperMotor.setPower(-.7);
-    }
 
-    public void stopFlipper() {
-        sideFlipperMotor.setPower(0);
-    }
+    //BEACON
 
-    public void setShooterPower(double power)
+    public void pushBeacon()
     {
-        shooter.setPower(power);
+        beaconPusher.setPosition(0);
+
     }
+
+    public void retractBeacon()
+    {
+        beaconPusher.setPosition(1);
+    }
+
+
+
+    //TELEMETRY
 
     public void logData(Telemetry telemetry) {
         telemetry.addData("FrontDist", getFrontDist());
     }
+
+
+
+    //DEPRECATED
+
+    @Deprecated
+    public double getDist() {
+        return getFrontDist();
+    }
+    @Deprecated
+    public void flipIn() {
+        //sideFlipperMotor.setPower(.4);
+    }
+    @Deprecated
+    public void flipOut() {
+        //sideFlipperMotor.setPower(-.7);
+    }
+    @Deprecated
+    public void stopFlipper() {
+        //sideFlipperMotor.setPower(0);
+    }
+    @Deprecated
+    public void shoot()
+    {
+        if(!shooter.isBusy()) {
+            shooter.resetDeviceConfigurationForOpMode();
+            shooter.setTargetPosition(1480);
+        }
+    }
+
+
 }
