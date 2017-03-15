@@ -25,7 +25,7 @@ import java.util.List;
  * TODO
  * TODO
  * TODO
- * TODO robot still gives NullPointerException in VisionTeleOp
+ * TODO remove all of my debugging telemetry adds -> I found my horrible mistake
  *
  *
  *
@@ -39,7 +39,7 @@ import java.util.List;
 
 
 public class VisionRobot extends Robot {
-    private State state = null; //state of robot
+    private State state = State.NULL; //state of robot
     private VisionOpMode opMode = null;
     private long lastStageTime = 0;
     private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE}; //TODO add more
@@ -95,7 +95,8 @@ public class VisionRobot extends Robot {
         SUCCESS, //Last action was successful
         FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
         FAILURE_TIMEOUT, //Robot timed out on previous task
-        CANCELLED //Previous action was cancelled
+        CANCELLED, //Previous action was cancelled
+        NULL //What it starts out as -> means absolutely nothing
     }
 
     private void setState(State state) {
@@ -121,13 +122,22 @@ public class VisionRobot extends Robot {
      * """
      */
     public void init() {
+        boolean x=true; //TODO remove
+
+        opMode.telemetry.addData("--Inside visbot.init()", "yes"); //TODO remove
+
         //Set primary camera to main camera on back
         opMode.setCamera(Cameras.PRIMARY);
 
         //Set frame size
         opMode.setFrameSize(new Size(900, 900));
 
-        opMode.beacon.setAnalysisMethod(Beacon.AnalysisMethod.FAST);
+        opMode.telemetry.addData("--Did some stuff with opmode in init()", "yes"); //TODO remove
+
+        opMode.telemetry.addData("--The beacon", opMode.beacon); //TODO remove
+        //opMode.beacon.setAnalysisMethod(Beacon.AnalysisMethod.FAST); //TODO TODO TODO add this back TODO !!!!!
+
+        opMode.telemetry.addData("--Successfully used beacon", "yes"); if(x) return; //TODO remove
 
         //set color tolerance
         //TODO play around with tolerance values
@@ -142,6 +152,7 @@ public class VisionRobot extends Robot {
         //camera control extension specifications
         opMode.cameraControl.setColorTemperature(CameraControlExtension.ColorTemperature.AUTO);
         opMode.cameraControl.setManualExposureCompensation(Constants.EXPO_COMP);
+        opMode.telemetry.addData("--Finished visbot init()", "yes"); //TODO remove
     }
 
     /**
@@ -348,10 +359,14 @@ public class VisionRobot extends Robot {
      * Continues whatever action is in progress (whatever the state of the robot is)
      */
     public void continueAction() {
+        opMode.telemetry.addData("state", state); //TODO remove
         switch (state) {
             case TIME_DRIVE:
+                opMode.telemetry.addData("++continueAction TIME_DRIVE", "yes"); boolean x=true;//if(x) return;//TODO remove
                 timeDrive(leftPower, rightPower, time);
                 break;
+            default:
+                opMode.telemetry.addData("++continueAction defaut", "yes"); //TODO remove
         }
     }
 

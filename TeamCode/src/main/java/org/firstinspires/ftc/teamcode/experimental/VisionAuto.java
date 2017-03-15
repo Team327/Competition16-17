@@ -43,14 +43,15 @@ public class VisionAuto extends LinearVisionOpMode{
         enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
         enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
         visRobot.init();
+        telemetry.addData("Did visbot.init()", "yes"); //TODO remove
     }
 
     @Override
-    public void runOpMode()
-    {
+    public void runOpMode() throws InterruptedException {
         //init the robot
         this.initialize();
-
+        waitForVisionStart(); //TODO is this necessary
+        telemetry.addData("Starting the match", "true"); //TODO remove
         //drive to ball
         while(visRobot.getFrontDist() > 12 )
         {

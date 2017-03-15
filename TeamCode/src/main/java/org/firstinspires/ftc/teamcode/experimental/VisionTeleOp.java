@@ -10,14 +10,14 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
  */
 @TeleOp(name = "Vision TeleOp")
 public class VisionTeleOp extends VisionOpMode {
-    VisionRobot visionBot;
-    private FinalTeleOp teleOp;
-    private double Kp;
-    private double Kd;
-    private int driveTime;
-    private int driveTimeInterval;
-    private boolean prevDLeft;
-    private boolean prevDRight;
+    VisionRobot visionBot=null;
+    private FinalTeleOp teleOp=null;
+    private double Kp=0;
+    private double Kd=0;
+    private int driveTime=0;
+    private int driveTimeInterval=0;
+    private boolean prevDLeft=false;
+    private boolean prevDRight=false;
     /**
      * Tank Drive System Description
      *
@@ -63,34 +63,31 @@ public class VisionTeleOp extends VisionOpMode {
     @Override
     public void init()
     {
-        try { //TODO remove catch all - debugging only
-            visionBot = new VisionRobot(hardwareMap, this);
+        telemetry.addData("Beacon_stuff", beacon.getAnalysis().getButtonString());
+        telemetry.addData("Starting init", "Yes"); //TODO remove
+        visionBot = new VisionRobot(hardwareMap, this);
+        telemetry.addData("Finished visbot init", "yes"); //TODO remove
+        ///VisionOpMode initialization
+        //enable camera extensions
+        enableExtension(Extensions.BEACON);         //Beacon detection
+        enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
+        enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
+        telemetry.addData("Enabled extensions", "yes"); //TODO remove
+        visionBot.init();
+        telemetry.addData("Did visbot.init()", "yes"); //TODO remove
 
-            ///VisionOpMode initialization
-            //enable camera extensions
-            enableExtension(Extensions.BEACON);         //Beacon detection
-            enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
-            enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
-            visionBot.init();
+        teleOp = new FinalTeleOp();
+        teleOp.makeInit(gamepad1, gamepad2, telemetry, hardwareMap);
+        telemetry.addData("Created FinalTeleOp and init", "yes"); //TODO remove
 
-            teleOp = new FinalTeleOp();
-            teleOp.makeInit(gamepad1, gamepad2, telemetry, hardwareMap);
+        Kp = 1;
+        Kd = 1;
 
-            Kp = 1;
-            Kd = 1;
-
-            driveTime = 1000;
-            driveTimeInterval = 500;
-            prevDLeft = false;
-            prevDRight = false;
-        } catch(Exception e) {
-            String err = "";
-            for(StackTraceElement trace : e.getStackTrace()) {
-                err += trace.toString() + "\n";
-            }
-            telemetry.addData("Error", err);
-            throw e;
-        }
+        driveTime = 1000;
+        driveTimeInterval = 500;
+        prevDLeft = false;
+        prevDRight = false;
+        telemetry.addData("Finished init", "yes"); //TODO remove
     }
 
     public boolean pressed(Gamepad g)
@@ -104,11 +101,15 @@ public class VisionTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
+        telemetry.addData("Loop started", "Yes"); boolean x = true; //TODO remove
+
         //engages loop for regular teleop functions
         teleOp.loop();
+        telemetry.addData("did teleop.loop()", "Yes"); //TODO remove
 
         //adds available telemetry from visionBot
         visionBot.logData();
+        telemetry.addData("did visbot logdata", "Yes"); //TODO remove
 
         //says that no button is pressed
         telemetry.addData("Drive Time:", driveTime);
@@ -188,8 +189,9 @@ public class VisionTeleOp extends VisionOpMode {
         //continues previous action
         else
         {
+            telemetry.addData("About to continue", "Yes"); //TODO remove
             visionBot.continueAction();
+            telemetry.addData("Continued?", "yes"); if(x) return;
         }
-
     }
 }
