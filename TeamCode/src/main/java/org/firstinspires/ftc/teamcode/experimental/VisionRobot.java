@@ -18,26 +18,6 @@ import java.util.List;
  * Created by gssmrobotics on 2/20/2017.
  */
 
-/**
- *
- * TODO
- * TODO
- * TODO
- * TODO
- * TODO
- * TODO remove all of my debugging telemetry adds -> I found my horrible mistake
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-
-
 public class VisionRobot extends Robot {
     private State state = State.NULL; //state of robot
     private VisionOpMode opMode = null;
@@ -122,9 +102,6 @@ public class VisionRobot extends Robot {
      * """
      */
     public void init() {
-        boolean x=true; //TODO remove
-
-        opMode.telemetry.addData("--Inside visbot.init()", "yes"); //TODO remove
 
         //Set primary camera to main camera on back
         opMode.setCamera(Cameras.PRIMARY);
@@ -132,12 +109,7 @@ public class VisionRobot extends Robot {
         //Set frame size
         opMode.setFrameSize(new Size(900, 900));
 
-        opMode.telemetry.addData("--Did some stuff with opmode in init()", "yes"); //TODO remove
-
-        opMode.telemetry.addData("--The beacon", opMode.beacon); //TODO remove
-        //opMode.beacon.setAnalysisMethod(Beacon.AnalysisMethod.FAST); //TODO TODO TODO add this back TODO !!!!!
-
-        opMode.telemetry.addData("--Successfully used beacon", "yes"); if(x) return; //TODO remove
+        opMode.beacon.setAnalysisMethod(Beacon.AnalysisMethod.FAST);
 
         //set color tolerance
         //TODO play around with tolerance values
@@ -152,7 +124,6 @@ public class VisionRobot extends Robot {
         //camera control extension specifications
         opMode.cameraControl.setColorTemperature(CameraControlExtension.ColorTemperature.AUTO);
         opMode.cameraControl.setManualExposureCompensation(Constants.EXPO_COMP);
-        opMode.telemetry.addData("--Finished visbot init()", "yes"); //TODO remove
     }
 
     /**
@@ -359,14 +330,10 @@ public class VisionRobot extends Robot {
      * Continues whatever action is in progress (whatever the state of the robot is)
      */
     public void continueAction() {
-        opMode.telemetry.addData("state", state); //TODO remove
         switch (state) {
             case TIME_DRIVE:
-                opMode.telemetry.addData("++continueAction TIME_DRIVE", "yes"); boolean x=true;//if(x) return;//TODO remove
                 timeDrive(leftPower, rightPower, time);
                 break;
-            default:
-                opMode.telemetry.addData("++continueAction defaut", "yes"); //TODO remove
         }
     }
 
