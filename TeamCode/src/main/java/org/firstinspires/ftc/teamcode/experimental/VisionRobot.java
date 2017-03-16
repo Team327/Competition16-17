@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import android.util.Pair;
+
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.lasarobotics.vision.android.Cameras;
 import org.lasarobotics.vision.ftc.resq.Beacon;
 import org.lasarobotics.vision.ftc.resq.Constants;
@@ -22,23 +26,31 @@ public class VisionRobot extends Robot {
     private State state = State.NULL; //state of robot
     private VisionOpMode opMode = null;
     private long lastStageTime = 0;
-    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE}; //TODO add more
+    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DETECT_BEACON,
+            State.HIT_BEACON, State.BACKUP}; //TODO add more
 
     //PDtoBeacon variables
         private double beaconConfidence = 0.1; //TODO real value or set in init
-        private double initialBeaconConfidence = 0.2; //TODO real value
         private int slidingConfidencePeriod = 5; //TODO real value
         private int frameSizeBuffer = 0; //TODO find good value and figure out scale issues
 
-        private LinkedList<Double> slidingConfidence = null; //TODO initialize
+        private LinkedList<Double> slidingConfidence = new LinkedList<>(); //TODO initialize
         private boolean startedToBeacon1 = false;
         private double prevError=0;
         private double prevTime=0;
         private int leftRed=0, rightRed=0;
 
+    //detectBeacon variables
+        private double initialBeaconConfidence = 0.2; //TODO real value
+
+    //hitBeacon variables
+        private double hitDist = 2; //Distance at which the beacon is hit
+
+    //backupFromBeacon variables
+        private double backupDist = 20; //Distance at which robot stops backing up
+
     //PDtoBeacon cached variables
         private double Kp=0, Kd=0, Ki=0;
-        private double maxTime=0;
 
     //timeDrive cached variables
         private double leftPower=0, rightPower=0;
@@ -72,6 +84,9 @@ public class VisionRobot extends Robot {
     public enum State {
         PD_BEACON, //Robot is in the middle of PD
         TIME_DRIVE, //Robot is in middle of timeDrive method
+        DETECT_BEACON, //detectBeacon method for driving until beacon is seen
+        HIT_BEACON, //hitBeacon method for hitting beacon after approaching it
+        BACKUP, //backupFromBeacon method for backing up from beacon after hitting it
         SUCCESS, //Last action was successful
         FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
         FAILURE_TIMEOUT, //Robot timed out on previous task
@@ -145,6 +160,7 @@ public class VisionRobot extends Robot {
         leftMotor.setPower(0);
         rightMotor.setPower(0);
         state = State.CANCELLED;
+        lastStageTime = System.currentTimeMillis();
         //TODO set everything to defaults
     }
 
@@ -155,19 +171,28 @@ public class VisionRobot extends Robot {
      * @param Kd      differential constant
      * @param maxTime max time to go before quitting millis
      */
-    public void PDtoBeacon(double Kp, double Kd, double maxTime) {
+    public void PDtoBeacon(double Kp, double Kd, long maxTime) {
         if(!isBusy()) { //TODO TODO TODO fix this
             setState(State.PD_BEACON);
-            this.Kp = Kp;
-            this.Kd = Kd;
-            this.maxTime = maxTime;
+
             slidingConfidence = new LinkedList<>();
             prevError = 0; //TODO make this better so no big initial jump
             prevTime = 0; //TODO see above
             leftRed = 0;
             rightRed = 0;
+            startedToBeacon1 = false;
+
+            this.Kp = Kp;
+            this.Kd = Kd;
+            this.time = maxTime;
         }
         if(state == State.PD_BEACON) {
+            if(System.currentTimeMillis() > lastStageTime + maxTime) {
+                cancel();
+                setState(State.FAILURE_TIMEOUT);
+                return;
+            }
+
             Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
             Size frameSize = opMode.getFrameSize();
 
@@ -180,7 +205,8 @@ public class VisionRobot extends Robot {
                 double frameWidth = frameSize.width;
                 if (frameHeight - beaconHeight >= frameSizeBuffer
                         || frameWidth - beaconWidth >= frameSizeBuffer) {
-                    state = State.SUCCESS;
+                    cancel();
+                    setState(State.SUCCESS);
                 }
 
                 //TODO use telemetry to ensure that frame size and beacon size are the same scale
@@ -223,14 +249,6 @@ public class VisionRobot extends Robot {
     }
 
     /**
-     * Calculates error of beacon position for use in PD to beacon based on beacon position if found
-     * @return Returns error of beacon (left negative, right positive)
-     */
-    private double error() {
-        return 0; //TODO calculate error and call this from PDtoBeacon
-    }
-
-    /**
      * Sets beacon confidence
      *
      * @param beaconConfidence Minimum confidence which must be maintained to continue navigation
@@ -255,7 +273,47 @@ public class VisionRobot extends Robot {
      * @param rightPower Power of right side (with camera end as front)
      */
     public void detectBeacon(double leftPower, double rightPower, long time) {
-        //TODO
+        if(!isBusy()) { //TODO TODO TODO fix this
+            setState(State.DETECT_BEACON);
+            slidingConfidence = new LinkedList<>();
+            setLeftPower(leftPower);
+            setRightPower(rightPower);
+
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.time = time;
+        }
+        if(state == State.DETECT_BEACON) {
+            if(System.currentTimeMillis() > time + lastStageTime) {
+                cancel();
+                setState(State.FAILURE_TIMEOUT);
+                return;
+            }
+
+            Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
+            opMode.telemetry.addData("Confidence", anal.getConfidenceString());
+
+            slidingConfidence.add(anal.getConfidence());
+            slidingConfidence.remove(0); //Removes first value
+
+            if (anal.isBeaconFound() && mean(slidingConfidence) > initialBeaconConfidence) {
+                cancel(); //Makes my job easier than cancelling a bunch of stuff
+                setState(State.SUCCESS);
+            }
+        }
+    }
+
+    /**
+     * Finds mean value of list
+     * @param data list of doubles
+     * @return mean value
+     */
+    double mean(List<Double> data) {
+        double sum = 0;
+        for(double value : data) {
+            sum += value;
+        }
+        return data.size() != 0 ? sum / data.size() : 0;
     }
 
     /**
@@ -268,13 +326,15 @@ public class VisionRobot extends Robot {
     public void timeDrive(double leftPower, double rightPower, long time) {
         if(!isBusy()) {
             setState(State.TIME_DRIVE); //Set state to start going with this op
-            this.leftPower = leftPower;
-            this.rightPower = rightPower;
-            this.time = time;
 
             //initialize motors
             this.setLeftPower(leftPower); //TODO check that these are in the same direction
             this.setRightPower(rightPower);
+
+            //Cached vars
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.time = time;
         }
         if(state == State.TIME_DRIVE) {
             if(System.currentTimeMillis() >= lastStageTime + time) {
@@ -292,9 +352,9 @@ public class VisionRobot extends Robot {
      *
      * @return Returns BeaconColor object for raw use (will be used a lot later)
      */
-    public Beacon.BeaconColor beaconColor() {
-        //TODO (and decide if this is what we want)
-        return null;
+    public Pair<Beacon.BeaconColor, Beacon.BeaconColor> beaconColor() {
+        Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
+        return Pair.create(anal.getStateLeft(), anal.getStateRight());
     }
 
     /**
@@ -305,7 +365,28 @@ public class VisionRobot extends Robot {
      * @param maxTime    Max time to drive before failure due to timeout
      */
     public void hitBeacon(double leftPower, double rightPower, long maxTime) {
-        //TODO
+        if(!isBusy()) {
+            setState(State.HIT_BEACON);
+            setLeftPower(leftPower);
+            setRightPower(rightPower);
+
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.time = maxTime;
+        }
+        if(state == State.HIT_BEACON) {
+            if(System.currentTimeMillis() > lastStageTime + maxTime) {
+                cancel();
+                setState(State.FAILURE_TIMEOUT);
+                return;
+            }
+            double dist = frontDist.getDistance(DistanceUnit.CM);
+            if (dist < hitDist) {
+                //We're too close
+                cancel();
+                setState(State.SUCCESS);
+            }
+        }
     }
 
     /**
@@ -316,17 +397,51 @@ public class VisionRobot extends Robot {
      * @param time       Time to drive before stopping
      */
     public void backupFromBeacon(double leftPower, double rightPower, long time) {
-        //TODO
+        if(!isBusy()) {
+            setState(State.BACKUP);
+            setLeftPower(leftPower);
+            setRightPower(rightPower);
+        }
+        if(state == State.HIT_BEACON) {
+            if(System.currentTimeMillis() > lastStageTime + time) {
+                cancel();
+                setState(State.FAILURE_TIMEOUT);
+                return;
+            }
+            double dist = frontDist.getDistance(DistanceUnit.CM);
+            if (dist < hitDist) {
+                //We're far enough away
+                cancel();
+                setState(State.SUCCESS);
+            }
+        }
     }
 
     /**
      * Determines if the beacon needs to be clicked
+     * Note: if the beacon is not in view, it will yield false
      *
      * @param alliance Alliance color
      */
-    public void needToClick(Alliance alliance) {
-        //TODO
-        //TODO if beacon confidence is below threshold possibly tech failure but still return
+    public boolean needToClick(Alliance alliance) {
+        Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
+        Beacon.BeaconColor leftColor = anal.getStateLeft();
+        Beacon.BeaconColor rightColor = anal.getStateRight();
+
+        if(leftColor == Beacon.BeaconColor.UNKNOWN || rightColor == Beacon.BeaconColor.UNKNOWN) {
+            //TODO there isn't really an option for this
+            return false;
+        } else if(alliance == Alliance.BLUE) {
+            return leftColor == Beacon.BeaconColor.RED
+                    || leftColor == Beacon.BeaconColor.RED_BRIGHT
+                    || rightColor == Beacon.BeaconColor.RED
+                    || rightColor == Beacon.BeaconColor.RED_BRIGHT;
+        } else {
+            return leftColor == Beacon.BeaconColor.BLUE
+                    || leftColor == Beacon.BeaconColor.BLUE_BRIGHT
+                    || rightColor == Beacon.BeaconColor.BLUE
+                    || rightColor == Beacon.BeaconColor.BLUE_BRIGHT;
+        }
     }
 
     /**
@@ -337,6 +452,18 @@ public class VisionRobot extends Robot {
             case TIME_DRIVE:
                 timeDrive(leftPower, rightPower, time);
                 break;
+            case PD_BEACON:
+                PDtoBeacon(this.Kp, this.Kd, this.time);
+                break;
+            case DETECT_BEACON:
+                detectBeacon(this.leftPower, this.rightPower, this.time);
+                break;
+            case HIT_BEACON:
+                hitBeacon(this.leftPower, this.rightPower, this.time);
+                break;
+            case BACKUP:
+                backupFromBeacon(this.leftPower, this.rightPower, this.time);
+                break;
         }
     }
 
@@ -344,7 +471,7 @@ public class VisionRobot extends Robot {
      * Logs a ton of data to telemetry (i.e. beacon location details)
      */
     public void logData() {
-        //TODO
+        //TODO add more
         opMode.telemetry.addData("VisionRobotStatus", "Thoroughly incomplete");
     }
 }
