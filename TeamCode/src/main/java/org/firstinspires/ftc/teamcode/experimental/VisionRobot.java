@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
-import android.util.Pair;
-
-import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
@@ -345,16 +342,6 @@ public class VisionRobot extends Robot {
             //continue driving
         }
         //TODO can we just disregard bad ops?
-    }
-
-    /**
-     * Gets beacon color (in nicely packaged object from lasarobotics)
-     *
-     * @return Returns BeaconColor object for raw use (will be used a lot later)
-     */
-    public Pair<Beacon.BeaconColor, Beacon.BeaconColor> beaconColor() {
-        Beacon.BeaconAnalysis anal = opMode.beacon.getAnalysis();
-        return Pair.create(anal.getStateLeft(), anal.getStateRight());
     }
 
     /**
