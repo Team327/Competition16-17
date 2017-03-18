@@ -122,7 +122,7 @@ public class NewTeleOp extends VisionOpMode {
         }
 
         //Toggle Control for Drive Inversion
-        else if(gamepad1.)
+        else if(gamepad1.y)
         {
 
         }

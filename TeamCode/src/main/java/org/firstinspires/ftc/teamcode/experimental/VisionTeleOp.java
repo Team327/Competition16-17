@@ -18,6 +18,8 @@ public class VisionTeleOp extends VisionOpMode {
     private int driveTimeInterval=0;
     private boolean prevDLeft=false;
     private boolean prevDRight=false;
+    private enum varChange {DRIVE_TIME, LEFT_POWER, RIGHT_POWER}
+
     /**
      * Tank Drive System Description
      *
@@ -82,6 +84,9 @@ public class VisionTeleOp extends VisionOpMode {
         driveTimeInterval = 500;
         prevDLeft = false;
         prevDRight = false;
+
+
+
     }
 
     public boolean pressed(Gamepad g)
