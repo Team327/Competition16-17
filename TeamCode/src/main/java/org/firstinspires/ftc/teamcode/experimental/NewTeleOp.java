@@ -13,12 +13,16 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 @TeleOp(name= "New TeleOp")
 public class NewTeleOp extends VisionOpMode {
     Robot robot;
-
+    boolean preva;
+    boolean beaconOut;
 
     @Override
     public void init()
     {
         robot = new Robot(hardwareMap);
+
+        preva = false;
+        beaconOut = false;
 
     }
 
@@ -34,6 +38,73 @@ public class NewTeleOp extends VisionOpMode {
     /**
      * Controller Map
      *
+     * Gamepad 1:
+     *      A:
+     *
+     *      B:
+     *          Beacon out (toggle)
+     *      X:
+     *
+     *      Y:
+     *
+     *      Dpad Up:
+     *
+     *      Dpad Down:
+     *
+     *      Dpad Left:
+     *
+     *      Dpad Right:
+     *
+     *      Start:
+     *
+     *      Back:
+     *
+     *      Left Analog Y:
+     *          Left Side Drive
+     *      Right Analog Y:
+     *          Right Side Drive
+     *      Left Bumper:
+     *
+     *      Right Bumper:
+     *
+     *      Left Trigger:
+     *
+     *      Right Trigger:
+     *
+     * Gamepad 2:
+     *      A:
+     *
+     *      B:
+     *
+     *      X:
+     *
+     *      Y:
+     *
+     *      Dpad Up:
+     *
+     *      Dpad Down:
+     *
+     *      Dpad Left:
+     *
+     *      Dpad Right:
+     *
+     *      Start:
+     *
+     *      Back:
+     *
+     *      Left Analog Y:
+     *
+     *      Right Analog Y:
+     *
+     *      Left Bumper:
+     *
+     *      Right Bumper:
+     *
+     *      Left Trigger:
+     *
+     *      Right Trigger:
+     *
+     *
      */
 
     /**
@@ -42,14 +113,40 @@ public class NewTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
-        if(gamepad1.a)
+        robot.setRightPower(gamepad1.right_stick_y);
+        robot.setLeftPower(gamepad1.left_stick_y);
+
+        if(false)
         {
-            robot.pushBeacon();
+
         }
-        else
+
+        //Toggle Control for Drive Inversion
+        else if(gamepad1.)
+
+
+        //Toggle Control for Beacon Pusher
+        else if(gamepad1.a && !preva)
         {
-            robot.retractBeacon();
+
+            if (beaconOut)
+                robot.retractBeacon();
+            else
+                robot.pushBeacon();
+
+
+            beaconOut = !beaconOut;
+            preva = gamepad1.a;
         }
+        else if(!gamepd1.a && preva)
+        {
+            preva = gamepad1.a;
+        }
+
+
+
+
+
     }
 
 }
