@@ -123,6 +123,9 @@ public class NewTeleOp extends VisionOpMode {
 
         //Toggle Control for Drive Inversion
         else if(gamepad1.)
+        {
+
+        }
 
 
         //Toggle Control for Beacon Pusher
@@ -138,7 +141,7 @@ public class NewTeleOp extends VisionOpMode {
             beaconOut = !beaconOut;
             preva = gamepad1.a;
         }
-        else if(!gamepd1.a && preva)
+        else if(!gamepad1.a && preva)
         {
             preva = gamepad1.a;
         }
