@@ -13,38 +13,23 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 @TeleOp(name= "New TeleOp")
 public class NewTeleOp extends VisionOpMode {
     Robot robot;
-    private boolean prev2a;
-    private boolean prev1a;
+
+    private boolean prev2a; //Gamepad 2
+    private boolean prev1a, prev1y, prev1b; //Gamepad 1
+
+    //Telemetry
     private boolean beaconOut;
-    private boolean regDrive;
+    private boolean wallFollow;
+    private Boolean invertedDrive;
+    private boolean capBallServoOut;
+
+    private double kp, ki, kd;
 
     private enum LaunchPosition {LAUNCHED, PULLED_BACK, LOADED_BALL, BALL_READY}
     private LaunchPosition launcher;
-    private double kp, ki, kd;
     private double loadTime;
-    private final double loadDelay = 500;
+    private final double loadDelay = 500;               //TODO FIND RIGHT TIME
 
-    /* SYSTEMS
-
-            -Shooter
-                -Shooter motor - launch load
-                -servo block
-            -Drivetrain
-                -Regular
-                -Wall Follow
-                -Invert
-            -Beacon Pusher
-                -Out
-                -In
-            -Lift
-                -Lift Up/down
-                -Servo pull
-            -Intake
-                -Forward/backward
-
-
-
-     */
 
 
     @Override
@@ -52,15 +37,27 @@ public class NewTeleOp extends VisionOpMode {
     {
         robot = new Robot(hardwareMap);
 
-        prev2a = false;
-        prev1a = false;
+        //telemetry
         beaconOut = false;
-        regDrive = true;
-        kp = 1;
-        ki = 1;
-        kd = 1;
-        loadTime = System.currentTimeMillis();
+        invertedDrive = true;
+        wallFollow = false;
+        capBallServoOut = false;
         launcher = LaunchPosition.LAUNCHED;
+        loadTime = System.currentTimeMillis();
+
+        //PID Constants
+        kp = 1;
+        ki = 1;                         //TODO TEST PID CONSTANTS
+        kd = 1;
+
+        //Toggle booleans
+        prev1a = false;
+        prev1b = false;
+        prev1y = false;
+        prev2a = false;
+
+
+
 
     }
 
@@ -80,11 +77,11 @@ public class NewTeleOp extends VisionOpMode {
      *      A:
      *          Wall follow (toggle)
      *      B:
-     *
+     *          Cap Ball Servo (toggle)
      *      X:
      *
      *      Y:
-     *
+     *          Invert Drive (toggle)
      *      Dpad Up:
      *
      *      Dpad Down:
@@ -104,14 +101,14 @@ public class NewTeleOp extends VisionOpMode {
      *      Left Bumper:
      *          Intake
      *      Right Bumper:
-     *
+     *          Reverse Intake
      *      Left Trigger:
-     *
+     *          Lower Lift
      *      Right Trigger:
      *          Raise lift
      * Gamepad 2:
      *      A:
-     *          Shoot
+     *          Shoot (Entire process)
      *      B:
      *          Beacon out (toggle)
      *      X:
@@ -151,22 +148,36 @@ public class NewTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
-        telemetry.addData("LOADING", launcher);
+        telemetry.addData("SHOOTER POS:", launcher);
+        telemetry.addData("BEACON PUSHER OUT:", beaconOut);
+        telemetry.addData("CAP BALL SERVO OUT:", capBallServoOut);
+        telemetry.addData("INVERTED DRIVE:", invertedDrive);
+        telemetry.addData("WALL FOLLOW:", wallFollow);
 
 
-        //drive
-        if(regDrive) {
+        //DRIVE-----------------------------------------------
+
+        /**
+         * Drive regularly (tank)
+         */
+        if(!wallFollow) {
             robot.setRightPower(gamepad1.right_stick_y);
             robot.setLeftPower(gamepad1.left_stick_y);
         }
+        /**
+         * drive with set distance from wall
+         */
         else
         {
             robot.wallFollow(kp, ki, kd, gamepad1.left_stick_y);
         }
-        //toggle control for drive type
+
+        /**
+         * toggle control for wall follow (Compatible with inversion)
+         */
         if( gamepad1.a && !prev1a)
         {
-            regDrive = !regDrive;
+            wallFollow = !wallFollow;
             prev1a = gamepad1.a;
         }
         else if (!gamepad1.a && prev1a)
@@ -174,41 +185,112 @@ public class NewTeleOp extends VisionOpMode {
             prev1a = gamepad1.a;
         }
 
+        /**
+         * Toggle Control for Inversion (Compatible with Wall Follow)
+         */
+        if(gamepad1.y && !prev1y)
+        {
+            robot.reverseFront();
+            invertedDrive = !invertedDrive;
+            prev1y = gamepad1.y;
+        }
+        else if(!gamepad1.y && prev1y)
+        {
+            prev1y = gamepad1.y;
+        }
 
 
-        //shooter
+        //SHOOTER---------------------------------------------
+
+        /**
+         * Launches ball if loaded
+         */
         if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
         {
             robot.launchBall(45);                    //TODO ENSURE POSITION
             launcher = LaunchPosition.LAUNCHED;
         }
-        if(launcher == LaunchPosition.LAUNCHED && !robot.shooterIsBusy())
+        /**
+         * Pulls back shooter if launched
+         */
+        else if(launcher == LaunchPosition.LAUNCHED && !robot.shooterIsBusy())
         {
             robot.pullBack(315);                    //TODO ENSURE POSITION
             launcher = LaunchPosition.PULLED_BACK;
         }
-        if(launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
+        /**
+         * Loads ball if pulled back and A is pressed
+         */
+        else if(gamepad1.a && launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
         {
-
+            loadTime = System.currentTimeMillis();
+            robot.liftBlock();
+            launcher = LaunchPosition.LOADED_BALL;
+        }
+        /**
+         * Closes off loader after time delay
+         */
+        else if(launcher == LaunchPosition.LOADED_BALL &&
+                            System.currentTimeMillis() - loadDelay >= loadTime )
+        {
+            robot.lowerBlock();
+            launcher = LaunchPosition.BALL_READY;
         }
 
 
+        //INTAKE----------------------------------------------
 
-        //Toggle Control for Drive Inversion
-        if(gamepad1.y)
-        {
-
-        }
-
-        //Intake
+        /**
+         * Activates Intake if left bumper
+         */
         if(gamepad1.left_bumper)
         {
             robot.intake(1);
         }
+        /**
+         * Activates Intake Reversed if Right bumper
+         */
+        if(gamepad1.right_bumper)
+        {
+            robot.intake(-1);
+        }
 
-        //Lift
-        robot.lift(gamepad1.left_trigger);
-        //Toggle Control for Beacon Pusher
+        //LIFT------------------------------------------------
+
+        /**
+         * lower if left is greater
+         */
+        if(gamepad1.left_trigger>gamepad1.right_trigger)
+            robot.lower(gamepad1.left_trigger);
+
+        /**
+         * raise if right is greater
+         */
+        else if(gamepad1.right_trigger>gamepad1.left_trigger)
+            robot.lift(gamepad1.right_trigger);
+
+        /**
+         * Toggle Control for Cap Ball Servo
+         */
+        if(gamepad1.b && !prev1b)
+        {
+                if(capBallServoOut)
+                    robot.ballIn();
+                else
+                    robot.ballOut();
+                capBallServoOut = !capBallServoOut;
+        }
+        else if(!gamepad1.b && prev1b)
+        {
+            prev1b = gamepad1.b;
+        }
+
+
+        //BEACON----------------------------------------------
+
+        /**
+         * Toggle Control for Beacon Pusher
+         */
         if(gamepad2.a && !prev2a)
         {
 
