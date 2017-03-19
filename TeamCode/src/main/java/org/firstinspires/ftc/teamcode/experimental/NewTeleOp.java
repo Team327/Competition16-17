@@ -174,16 +174,20 @@ public class NewTeleOp extends VisionOpMode {
 
         /**
          * toggle control for wall follow (Compatible with inversion)
+         * resets wall follow data when turned off
          */
         if( gamepad1.a && !prev1a)
         {
             wallFollow = !wallFollow;
+            if(!wallFollow)
+                    robot.resetWallFollow();
             prev1a = gamepad1.a;
         }
         else if (!gamepad1.a && prev1a)
         {
             prev1a = gamepad1.a;
         }
+
 
         /**
          * Toggle Control for Inversion (Compatible with Wall Follow)
@@ -204,6 +208,7 @@ public class NewTeleOp extends VisionOpMode {
 
         /**
          * Launches ball if loaded
+         * Hold A for continuous Shooting
          */
         if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
         {
