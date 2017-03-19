@@ -13,11 +13,39 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 @TeleOp(name= "New TeleOp")
 public class NewTeleOp extends VisionOpMode {
     Robot robot;
-    boolean prev2a;
-    boolean prev1a;
-    boolean beaconOut;
-    boolean regDrive;
-    double kp, ki, kd;
+    private boolean prev2a;
+    private boolean prev1a;
+    private boolean beaconOut;
+    private boolean regDrive;
+
+    private enum LaunchPosition {LAUNCHED, PULLED_BACK, LOADED_BALL, BALL_READY}
+    private LaunchPosition launcher;
+    private double kp, ki, kd;
+    private double loadTime;
+    private final double loadDelay = 500;
+
+    /* SYSTEMS
+
+            -Shooter
+                -Shooter motor - launch load
+                -servo block
+            -Drivetrain
+                -Regular
+                -Wall Follow
+                -Invert
+            -Beacon Pusher
+                -Out
+                -In
+            -Lift
+                -Lift Up/down
+                -Servo pull
+            -Intake
+                -Forward/backward
+
+
+
+     */
+
 
     @Override
     public void init()
@@ -25,12 +53,14 @@ public class NewTeleOp extends VisionOpMode {
         robot = new Robot(hardwareMap);
 
         prev2a = false;
-        prev1a = false
+        prev1a = false;
         beaconOut = false;
         regDrive = true;
         kp = 1;
         ki = 1;
         kd = 1;
+        loadTime = System.currentTimeMillis();
+        launcher = LaunchPosition.LAUNCHED;
 
     }
 
@@ -121,6 +151,9 @@ public class NewTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
+        telemetry.addData("LOADING", launcher);
+
+
         //drive
         if(regDrive) {
             robot.setRightPower(gamepad1.right_stick_y);
@@ -143,11 +176,23 @@ public class NewTeleOp extends VisionOpMode {
 
 
 
-        //shoot
-        if(gamepad2.a)
+        //shooter
+        if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
         {
-            robot.setShooterPower(1);
+            robot.launchBall(45);                    //TODO ENSURE POSITION
+            launcher = LaunchPosition.LAUNCHED;
         }
+        if(launcher == LaunchPosition.LAUNCHED && !robot.shooterIsBusy())
+        {
+            robot.pullBack(315);                    //TODO ENSURE POSITION
+            launcher = LaunchPosition.PULLED_BACK;
+        }
+        if(launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
+        {
+
+        }
+
+
 
         //Toggle Control for Drive Inversion
         if(gamepad1.y)

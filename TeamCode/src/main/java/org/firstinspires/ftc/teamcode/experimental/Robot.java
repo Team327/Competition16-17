@@ -40,9 +40,6 @@ public class Robot {
         leftMotor = map.dcMotor.get("left");
         rightMotor = map.dcMotor.get("right");
         shooter = map.dcMotor.get("shooter");
-        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
-        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftFrontDist"));
-        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftRearDist"));
         caroline = map.dcMotor.get("caroline");
         intake = map.dcMotor.get("intake");
             //servos
@@ -50,13 +47,19 @@ public class Robot {
         shooterBlock = map.servo.get("shooterBlock");
         capHolder = map.servo.get("capHolder");
 
-            //DEPRECATED sideFlipperMotor = map.dcMotor.get("flipper");
+            //distance sensors
+        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
+        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftFrontDist"));
+        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftRearDist"));
+
+        //DEPRECATED sideFlipperMotor = map.dcMotor.get("flipper");
             //DEPRECATED beaconHitter = map.dcMotor.get("beacon");
 
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         caroline.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -70,6 +73,8 @@ public class Robot {
      * Uses range sensor to find distance from front sensor
      * @return returns distance in cm detected by front sensor
      */
+
+    //SENSORS-------------------------------------------------
 
     public double getFrontDist()
     {
@@ -86,27 +91,28 @@ public class Robot {
         return leftRearDist.getDistance(DistanceUnit.CM);
     }
 
-    //SHOOTER
 
-    public void stopShooter ()
+
+    //SHOOTER-------------------------------------------------
+
+    public void launchBall(int degree)
     {
-        shooter.setPower(0);
+
+        shooter.setTargetPosition(shooter.getCurrentPosition() + degree);
     }
-
-
-    public void setShooterPower(double power)
+    public void pullBack(int degree)
     {
-        shooter.setPower(Range.clip(power, -1, 1));
+        shooter.setTargetPosition(shooter.getCurrentPosition() + degree);
     }
 
     public void liftBlock()
     {
-        //TODO
+        shooterBlock.setPosition(1);               //TODO ENSURE POSITION
     }
 
     public void lowerBlock()
     {
-        //TODO
+        shooterBlock.setPosition(0);               //TODO ENSURE POSITION
     }
 
     public void intake(double power)
@@ -114,7 +120,14 @@ public class Robot {
         intake.setPower(power);
     }
 
-    //DRIVETRAIN
+    public boolean shooterIsBusy()
+    {
+        return shooter.isBusy();
+    }
+
+
+
+    //DRIVETRAIN----------------------------------------------
 
     public void setRightPower(double speed)
     {
@@ -153,30 +166,44 @@ public class Robot {
 
 
 
-    //BEACON
+    //BEACON--------------------------------------------------
 
     public void pushBeacon()
     {
-        beaconPusher.setPosition(0);
+        beaconPusher.setPosition(0);        //TODO ENSURE POSITION
 
     }
 
     public void retractBeacon()
     {
-        beaconPusher.setPosition(1);
+        beaconPusher.setPosition(1);        //TODO ENSURE POSITION
     }
 
 
-    //LIFT
+    //LIFT----------------------------------------------------
 
     public void lift(double power)
     {
         caroline.setPower(power);
     }
 
+    public void lower(double power)
+    {
+        caroline.setPower(-power);
+    }
+
+    public void ballIn()
+    {
+        capHolder.setPosition(1);           //TODO ENSURE POSITION
+    }
+    public void ballOut()
+    {
+        capHolder.setPosition(0);           //TODO ENSURE POSITION
+    }
 
 
-    //TELEMETRY
+
+    //TELEMETRY-----------------------------------------------
 
     public void logData(Telemetry telemetry) {
         telemetry.addData("FrontDist", getFrontDist());
@@ -184,33 +211,7 @@ public class Robot {
 
 
 
-    //DEPRECATED
-
-    @Deprecated
-    public double getDist() {
-        return getFrontDist();
-    }
-    @Deprecated
-    public void flipIn() {
-        //sideFlipperMotor.setPower(.4);
-    }
-    @Deprecated
-    public void flipOut() {
-        //sideFlipperMotor.setPower(-.7);
-    }
-    @Deprecated
-    public void stopFlipper() {
-        //sideFlipperMotor.setPower(0);
-    }
-    @Deprecated
-    public void shoot()
-    {
-        if(!shooter.isBusy()) {
-            shooter.resetDeviceConfigurationForOpMode();
-            shooter.setTargetPosition(1480);
-        }
-    }
-
+    //TELE-AUTONOMOUS-----------------------------------------
     /**
      * Follows wall using PID controller
      * @param kp Proportional constant
@@ -265,6 +266,43 @@ public class Robot {
     public void resetWallFollow() {
         while(!errors.isEmpty()) {
             errors.removeFirst();
+        }
+    }
+
+    //DEPRECATED----------------------------------DEPRECATED----------------------------------DEPRECATED----------------------------------DEPRECATED----------------------------------DEPRECATED
+
+    @Deprecated
+    public void stopShooter ()
+    {
+        shooter.setPower(0);
+    }
+    @Deprecated
+    public void setShooterPower(double power)
+    {
+        shooter.setPower(Range.clip(power, -1, 1));
+    }
+    @Deprecated
+    public double getDist() {
+        return getFrontDist();
+    }
+    @Deprecated
+    public void flipIn() {
+        //sideFlipperMotor.setPower(.4);
+    }
+    @Deprecated
+    public void flipOut() {
+        //sideFlipperMotor.setPower(-.7);
+    }
+    @Deprecated
+    public void stopFlipper() {
+        //sideFlipperMotor.setPower(0);
+    }
+    @Deprecated
+    public void shoot()
+    {
+        if(!shooter.isBusy()) {
+            shooter.resetDeviceConfigurationForOpMode();
+            shooter.setTargetPosition(1480);
         }
     }
 }
