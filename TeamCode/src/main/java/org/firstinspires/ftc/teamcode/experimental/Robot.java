@@ -109,6 +109,11 @@ public class Robot {
         //TODO
     }
 
+    public void intake(double power)
+    {
+        intake.setPower(power);
+    }
+
     //DRIVETRAIN
 
     public void setRightPower(double speed)
@@ -159,6 +164,14 @@ public class Robot {
     public void retractBeacon()
     {
         beaconPusher.setPosition(1);
+    }
+
+
+    //LIFT
+
+    public void lift(double power)
+    {
+        caroline.setPower(power);
     }
 
 
