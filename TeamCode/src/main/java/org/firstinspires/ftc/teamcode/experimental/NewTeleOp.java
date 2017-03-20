@@ -20,7 +20,7 @@ public class NewTeleOp extends VisionOpMode {
     //Telemetry
     private boolean beaconOut;
     private boolean wallFollow;
-    private Boolean invertedDrive;
+    private boolean invertedDrive;
     private boolean capBallServoOut;
 
     private double kp, ki, kd;
@@ -210,6 +210,7 @@ public class NewTeleOp extends VisionOpMode {
          * Launches ball if loaded
          * Hold A for continuous Shooting
          */
+        //TODO WRONG THROWS NULL POINTER
         if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
         {
             robot.launchBall(45);                    //TODO ENSURE POSITION

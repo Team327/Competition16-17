@@ -98,11 +98,13 @@ public class Robot {
     public void launchBall(int degree)
     {
 
-        shooter.setTargetPosition(shooter.getCurrentPosition() + degree);
+        shooter.setTargetPosition(shooter.getCurrentPosition() + (degree*360/1120));
+        shooter.setPower(-1);
     }
     public void pullBack(int degree)
     {
-        shooter.setTargetPosition(shooter.getCurrentPosition() + degree);
+        shooter.setTargetPosition(shooter.getCurrentPosition() + (degree*360/1120));
+        shooter.setPower(-1);
     }
 
     public void liftBlock()
