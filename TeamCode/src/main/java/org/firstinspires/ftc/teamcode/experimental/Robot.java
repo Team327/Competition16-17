@@ -95,6 +95,11 @@ public class Robot {
 
     //SHOOTER-------------------------------------------------
 
+    public void shooterStop()
+    {
+        shooter.setPower(0);
+    }
+
     public void launchBall(int degree)
     {
 

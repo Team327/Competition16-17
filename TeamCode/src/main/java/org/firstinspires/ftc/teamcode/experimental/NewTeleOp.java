@@ -205,13 +205,19 @@ public class NewTeleOp extends VisionOpMode {
 
 
         //SHOOTER---------------------------------------------
-
+        /**
+         * Should stop the shooter?
+         */
+        if(!robot.shooterIsBusy())
+        {
+            robot.shooterStop();
+        }
         /**
          * Launches ball if loaded
          * Hold A for continuous Shooting
          */
         //TODO WRONG THROWS NULL POINTER
-        if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
+        if(gamepad2.a && launcher == LaunchPosition.BALL_READY && !robot.shooterIsBusy())
         {
             robot.launchBall(45);                    //TODO ENSURE POSITION
             launcher = LaunchPosition.LAUNCHED;
@@ -237,7 +243,8 @@ public class NewTeleOp extends VisionOpMode {
          * Closes off loader after time delay
          */
         else if(launcher == LaunchPosition.LOADED_BALL &&
-                            System.currentTimeMillis() - loadDelay >= loadTime )
+                            System.currentTimeMillis() - loadDelay >= loadTime &&
+                            !robot.shooterIsBusy())
         {
             robot.lowerBlock();
             launcher = LaunchPosition.BALL_READY;
