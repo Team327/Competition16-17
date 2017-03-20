@@ -233,7 +233,7 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * Loads ball if pulled back and A is pressed
          */
-        else if(gamepad1.a && launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
+        else if (gamepad2.a && launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
         {
             loadTime = System.currentTimeMillis();
             robot.liftBlock();
