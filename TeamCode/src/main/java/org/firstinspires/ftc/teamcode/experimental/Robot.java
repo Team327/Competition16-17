@@ -134,17 +134,17 @@ public class Robot {
     public void setRightPower(double speed)
     {
         if(forward)
-            rightMotor.setPower(Range.clip(speed, -1, 1));
+            rightMotor.setPower(Range.clip(-speed, -1, 1));
         else
-            leftMotor.setPower(Range.clip(speed, -1, 1));
+            leftMotor.setPower(Range.clip(-speed, -1, 1));
     }
 
     public void setLeftPower(double speed)
     {
         if(forward)
-            leftMotor.setPower(Range.clip(-speed, -1, 1));
+            leftMotor.setPower(Range.clip(speed, -1, 1));
         else
-            rightMotor.setPower(Range.clip(-speed, -1, 1));
+            rightMotor.setPower(Range.clip(speed, -1, 1));
     }
 
     public void brake()
