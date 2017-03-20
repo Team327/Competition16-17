@@ -14,7 +14,7 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 public class NewTeleOp extends VisionOpMode {
     Robot robot;
 
-    private boolean prev2a; //Gamepad 2
+    private boolean prev2b; //Gamepad 2
     private boolean prev1a, prev1y, prev1b; //Gamepad 1
 
     //Telemetry
@@ -42,7 +42,7 @@ public class NewTeleOp extends VisionOpMode {
         invertedDrive = true;
         wallFollow = false;
         capBallServoOut = false;
-        launcher = LaunchPosition.LAUNCHED;
+        launcher = LaunchPosition.BALL_READY;
         loadTime = System.currentTimeMillis();
 
         //PID Constants
@@ -54,7 +54,7 @@ public class NewTeleOp extends VisionOpMode {
         prev1a = false;
         prev1b = false;
         prev1y = false;
-        prev2a = false;
+        prev2b = false;
 
 
 
@@ -208,18 +208,20 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * Should stop the shooter?
          */
-        if(!robot.shooterIsBusy())
+        if (robot.shooterIsBusy())
         {
-            robot.shooterStop();
+            robot.shooterPower(-1);
+        } else {
+            robot.shooterPower(0);
         }
+
         /**
          * Launches ball if loaded
          * Hold A for continuous Shooting
          */
-        //TODO WRONG THROWS NULL POINTER
         if(gamepad2.a && launcher == LaunchPosition.BALL_READY && !robot.shooterIsBusy())
         {
-            robot.launchBall(45);                    //TODO ENSURE POSITION
+            robot.launchBall();                    //TODO ENSURE POSITION
             launcher = LaunchPosition.LAUNCHED;
         }
         /**
@@ -227,7 +229,7 @@ public class NewTeleOp extends VisionOpMode {
          */
         else if(launcher == LaunchPosition.LAUNCHED && !robot.shooterIsBusy())
         {
-            robot.pullBack(315);                    //TODO ENSURE POSITION
+            robot.pullBack();                    //TODO ENSURE POSITION
             launcher = LaunchPosition.PULLED_BACK;
         }
         /**
@@ -304,7 +306,7 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * Toggle Control for Beacon Pusher
          */
-        if(gamepad2.a && !prev2a)
+        if (gamepad2.b && !prev2b)
         {
 
             if (beaconOut)
@@ -314,11 +316,10 @@ public class NewTeleOp extends VisionOpMode {
 
 
             beaconOut = !beaconOut;
-            prev2a = gamepad2.a;
-        }
-        else if(!gamepad2.a && prev2a)
+            prev2b = gamepad2.b;
+        } else if (!gamepad2.b && prev2b)
         {
-            prev2a = gamepad2.a;
+            prev2b = gamepad2.b;
         }
 
 

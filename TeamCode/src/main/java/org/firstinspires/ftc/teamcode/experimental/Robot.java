@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.experimental;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -32,6 +30,8 @@ public class Robot {
     private final int errorsPeriod = 10; //period of sliding window for error (used in I)
     private final double goal = 4; //Goal distance in CM
     private final double leftDistSeparation = 30; //TODO measure distance between sensors on bot
+
+    private int position;
 
     public Robot(HardwareMap map)
     {
@@ -95,21 +95,23 @@ public class Robot {
 
     //SHOOTER-------------------------------------------------
 
-    public void shooterStop()
+    public void shooterPower(double power)
     {
-        shooter.setPower(0);
+        shooter.setPower(power);
     }
 
-    public void launchBall(int degree)
+    public void launchBall()
     {
+        position = (int) (-1.0 * 45 * 360 / 1440);
+        shooter.setTargetPosition(shooter.getCurrentPosition() + position);
 
-        shooter.setTargetPosition(shooter.getCurrentPosition() + (degree*360/1120));
-        shooter.setPower(-1);
     }
-    public void pullBack(int degree)
+
+    public void pullBack()
     {
-        shooter.setTargetPosition(shooter.getCurrentPosition() + (degree*360/1120));
-        shooter.setPower(-1);
+        position = (int) (-1.0 * 315 * 360 / 1440);
+        shooter.setTargetPosition(shooter.getCurrentPosition() + position);
+
     }
 
     public void liftBlock()
