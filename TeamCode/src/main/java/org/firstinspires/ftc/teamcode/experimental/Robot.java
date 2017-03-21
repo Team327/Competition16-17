@@ -102,15 +102,17 @@ public class Robot {
 
     public void launchBall()
     {
-        position = (int) (-1.0 * 45 * 360 / 1440);
+        position = (int) (-1);
         shooter.setTargetPosition(shooter.getCurrentPosition() + position);
+        shooter.setPower(-1);
 
     }
 
     public void pullBack()
     {
-        position = (int) (-1.0 * 315 * 360 / 1440);
+        position = (int) (-2);
         shooter.setTargetPosition(shooter.getCurrentPosition() + position);
+        shooter.setPower(-1);
 
     }
 

@@ -203,30 +203,26 @@ public class NewTeleOp extends VisionOpMode {
             prev1y = gamepad1.y;
         }
 
-
-        //SHOOTER---------------------------------------------
+        //OOTER---------------------------------------------
         /**
          * Should stop the shooter?
-         */
-        if (robot.shooterIsBusy())
+         //*
+         if (!robot.shooterIsBusy())
         {
-            robot.shooterPower(-1);
-        } else {
             robot.shooterPower(0);
         }
-
-        /**
+         /**
          * Launches ball if loaded
          * Hold A for continuous Shooting
-         */
-        if(gamepad2.a && launcher == LaunchPosition.BALL_READY && !robot.shooterIsBusy())
+         *//*
+        if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
         {
             robot.launchBall();                    //TODO ENSURE POSITION
             launcher = LaunchPosition.LAUNCHED;
         }
         /**
          * Pulls back shooter if launched
-         */
+         *//*
         else if(launcher == LaunchPosition.LAUNCHED && !robot.shooterIsBusy())
         {
             robot.pullBack();                    //TODO ENSURE POSITION
@@ -234,19 +230,18 @@ public class NewTeleOp extends VisionOpMode {
         }
         /**
          * Loads ball if pulled back and A is pressed
-         */
+         *//*
         else if (gamepad2.a && launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
         {
             loadTime = System.currentTimeMillis();
             robot.liftBlock();
             launcher = LaunchPosition.LOADED_BALL;
         }
-        /**
+         /**
          * Closes off loader after time delay
-         */
+         *//*
         else if(launcher == LaunchPosition.LOADED_BALL &&
-                            System.currentTimeMillis() - loadDelay >= loadTime &&
-                            !robot.shooterIsBusy())
+                            System.currentTimeMillis() - loadDelay >= loadTime)
         {
             robot.lowerBlock();
             launcher = LaunchPosition.BALL_READY;
