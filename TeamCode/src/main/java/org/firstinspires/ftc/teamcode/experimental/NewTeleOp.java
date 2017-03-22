@@ -213,15 +213,16 @@ public class NewTeleOp extends VisionOpMode {
         //SHOOTER---------------------------------------------
 
 
-        if (gamepad2.a && !prev2a)
-        {
-            robot.launch();
-            prev2a = gamepad2.a;
-        } else if (!gamepad2.a && prev2a)
-        {
-            prev2a = gamepad2.a;
-        }
+//        if (gamepad2.a && !prev2a)
+//        {
+//            robot.launch();
+//            prev2a = gamepad2.a;
+//        } else if (!gamepad2.a && prev2a)
+//        {
+//            prev2a = gamepad2.a;
+//        }
 
+        robot.launch(gamepad2.a);
 
         //INTAKE----------------------------------------------
 
