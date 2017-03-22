@@ -121,6 +121,7 @@ public class Robot {
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         int encoderClicks = prevFullRotation + (int) ((degrees / 360) * (gearRatio * encoderRotation));
 
