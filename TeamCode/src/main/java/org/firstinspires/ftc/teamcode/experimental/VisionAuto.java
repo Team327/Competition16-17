@@ -19,6 +19,9 @@ public class VisionAuto extends LinearVisionOpMode{
     static final double Kp = 1;
     static final double Kd = -1;
 
+    //single iteration variable
+    private final boolean communism = true; //Are we the red alliance
+    private final int balls2shoot = 2; //Number of balls to shoot
 
     public void initialize()
     {
@@ -48,6 +51,49 @@ public class VisionAuto extends LinearVisionOpMode{
 //        }
 //        telemetry.addData("auto status", "finished drive2dist");
 
-//        visRobot.distDriveDrive; //TODO
+        //drive forward 4 feet
+        visRobot.distDriveTicks(1, 1, visRobot.dist2ticks(4));
+        while (visRobot.isBusy()) {
+            visRobot.continueAction();
+            telemetry.addData("auto status", "drive past ball");
+        }
+        telemetry.addData("visbot status", visRobot.getState());
+        telemetry.addData("auto status", "done drive past ball");
+
+        //turn 90 degrees (roughly 2 feet?)
+        visRobot.distDriveTicks(-1, 1, visRobot.dist2ticks(2));
+        while (visRobot.isBusy()) {
+            visRobot.continueAction();
+            telemetry.addData("auto status", "turn to beacon");
+        }
+        telemetry.addData("visbot status", visRobot.getState());
+        telemetry.addData("auto status", "done turn to beacon");
+
+        //turn clockwise until beacon seen
+        visRobot.detectBeacon(0.7, -0.4, 2000);
+        while (visRobot.isBusy()) {
+            visRobot.continueAction();
+            telemetry.addData("auto status", "search for beacon 1");
+        }
+        telemetry.addData("visbot status", visRobot.getState());
+        telemetry.addData("auto status", "done search for beacon 1");
+
+        //PD to beacon
+        visRobot.detectBeacon(0.7, -0.4, 2000);
+        while (visRobot.isBusy()) {
+            visRobot.continueAction();
+            telemetry.addData("auto status", "drive past ball");
+        }
+        telemetry.addData("visbot status", visRobot.getState());
+        telemetry.addData("auto status", "done driving past ball");
+
+        //turn clockwise until beacon seen
+        visRobot.detectBeacon(0.7, -0.4, 2000);
+        while (visRobot.isBusy()) {
+            visRobot.continueAction();
+            telemetry.addData("auto status", "drive past ball");
+        }
+        telemetry.addData("visbot status", visRobot.getState());
+        telemetry.addData("auto status", "done driving past ball");
     }
 }

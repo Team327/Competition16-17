@@ -28,6 +28,11 @@ public class VisionRobot extends Robot {
     private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DIST_DRIVE,
             State.DRIVE2DIST, State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
 
+    private final int inchDist = (int) (560 / 12.56); //ticks in one inch (theoretically)
+    private final double efficiencyMultiplier = 1; //roughly the efficiency of the drivetrain
+    private final double fullRotationTicks = dist2ticks(56.52); //James's calculated ticks for rotation
+    private final double rotationEfficiencyMultiplier = 1; //added efficiency multiplier for turning
+
     //PDtoBeacon variables
         private double beaconConfidence = 0.1; //TODO real value or set in init
         private int slidingConfidencePeriod = 5; //TODO real value
@@ -57,11 +62,11 @@ public class VisionRobot extends Robot {
 
     //distDrive cached variables
     private double leftStartPos = 0, rightStartPos = 0;
-    private final int inchDist = (int) (560 / 12.56); //ticks in one inch (theoretically)
-    private final double efficiencyMultiplier = 1; //roughly the efficiency of the drivetrain
+    private long ticks; //ticks to drive
 
     //drive2dist cached variables
     private double stopDist = 0;
+    private boolean direction = true;
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -325,6 +330,16 @@ public class VisionRobot extends Robot {
         return data.size() != 0 ? sum / data.size() : 0;
     }
 
+    /**
+     * Converts angle to distance (only works if wheels drive same speed)
+     *
+     * @param angle Angle in degrees to convert
+     * @return returns ticks of turn
+     */
+    public int angle2ticks(double angle) {
+        return (int) (angle / 360 * fullRotationTicks * fullRotationTicks); //TODO I think it might need division
+    }
+
     public int dist2ticks(double dist) {
         return (int) (dist * inchDist * efficiencyMultiplier);
     }
@@ -350,6 +365,7 @@ public class VisionRobot extends Robot {
             this.rightPower = rightPower;
             this.leftStartPos = abs(leftMotor.getCurrentPosition());
             this.rightStartPos = abs(rightMotor.getCurrentPosition());
+            this.ticks = ticks;
         }
         if (state == State.DIST_DRIVE) {
             if (abs(leftMotor.getCurrentPosition()) > leftStartPos + ticks
@@ -361,8 +377,6 @@ public class VisionRobot extends Robot {
             //continue driving
         }
     }
-
-    //TODO make distDriveTicks compatible with cocntinueAction
 
     /**
      * Drive a certain amount of time with constant power
@@ -402,8 +416,9 @@ public class VisionRobot extends Robot {
      * @param rightPower Right drive power (with camera end as front)
      * @param dist distance (cm) from any object at front
      * @param time max time to drive
+     * @param direction if true, going forward, else going backward (i.e. object getting farther)
      */
-    public void drive2dist(double leftPower, double rightPower, double dist, long time) {
+    public void drive2dist(double leftPower, double rightPower, double dist, long time, boolean direction) {
         if(!isBusy()) {
             setState(State.DRIVE2DIST); //Set state to start going with this op
 
@@ -416,15 +431,16 @@ public class VisionRobot extends Robot {
             this.rightPower = rightPower;
             this.stopDist = dist;
             this.time = time;
+            this.direction = direction;
         }
         if(state == State.DRIVE2DIST) {
             if(System.currentTimeMillis() >= lastStageTime + time) {
                 //Time's up - it's done driving
                 cancel(); //call one function to stop everything instead of doing it myself
-                setState(State.SUCCESS);
+                setState(State.FAILURE_TIMEOUT);
             }
-            if(getFrontDist() <= dist) {
-                //distance is right
+            if (direction ? (getFrontDist() <= dist) : (getFrontDist() >= dist)) {
+                //distance less than for going forward or greater than for backward drive
                 cancel();
                 setState(State.SUCCESS);
             }
@@ -529,7 +545,11 @@ public class VisionRobot extends Robot {
                 timeDrive(leftPower, rightPower, time);
                 break;
             case DIST_DRIVE:
-                distDriveTicks(leftPower, rightPower, 9); //TODO
+                distDriveTicks(leftPower, rightPower, ticks);
+                break;
+            case DRIVE2DIST:
+                drive2dist(leftPower, rightPower, stopDist, time, direction);
+                break;
             case PD_BEACON:
                 PDtoBeacon(this.Kp, this.Kd, this.time);
                 break;

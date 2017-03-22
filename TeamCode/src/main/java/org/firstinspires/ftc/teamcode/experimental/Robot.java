@@ -163,6 +163,10 @@ public class Robot {
         }
     }
 
+    public ShootState getShootState() {
+        return shootState;
+    }
+
     /**
      * Launches ball in two phases of pressing a (unless a is held)
      * @param act if true, it will start the launch or shoot (depending on state), else finish current one
