@@ -58,6 +58,14 @@ public class NewTeleOp extends VisionOpMode {
 
     }
 
+    /**
+     * Allows other opmodes to extend this without actually extending it.
+     *
+     * @param gamepad1
+     * @param gamepad2
+     * @param telemetry
+     * @param hardwareMap
+     */
     public void makeInit(Gamepad gamepad1, Gamepad gamepad2, Telemetry telemetry, HardwareMap hardwareMap)
     {
         this.gamepad1 = gamepad1;
