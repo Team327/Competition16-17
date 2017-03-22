@@ -69,7 +69,7 @@ public class Robot {
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -121,7 +121,6 @@ public class Robot {
 
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         int encoderClicks = prevFullRotation + (int) ((degrees / 360) * (gearRatio * encoderRotation));
 
@@ -158,7 +157,7 @@ public class Robot {
         return shooter.isBusy();
     }
 
-
+    //TODO TODO TODO Put shoot and load algorithm here instead of `New TeleOp`
 
     //DRIVETRAIN----------------------------------------------
 

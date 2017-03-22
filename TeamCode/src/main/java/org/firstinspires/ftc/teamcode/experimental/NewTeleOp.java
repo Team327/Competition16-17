@@ -25,8 +25,6 @@ public class NewTeleOp extends VisionOpMode {
 
     private double kp, ki, kd;
 
-    private enum LaunchPosition {LAUNCHED, READY}
-    private LaunchPosition launcher;
     private double loadTime;
     private final double loadDelay = 500;               //TODO FIND RIGHT TIME
 
@@ -42,7 +40,6 @@ public class NewTeleOp extends VisionOpMode {
         invertedDrive = true;
         wallFollow = false;
         capBallServoOut = false;
-        launcher = LaunchPosition.READY;
         loadTime = System.currentTimeMillis();
 
         //PID Constants
@@ -149,7 +146,6 @@ public class NewTeleOp extends VisionOpMode {
     public void loop()
     {
         telemetry.addData("ENCODER:", robot.getShooterPos());
-        telemetry.addData("SHOOTER STATUS:", launcher);
         telemetry.addData("BEACON PUSHER OUT:", beaconOut);
         telemetry.addData("CAP BALL SERVO OUT:", capBallServoOut);
         telemetry.addData("INVERTED DRIVE:", invertedDrive);
@@ -212,7 +208,6 @@ public class NewTeleOp extends VisionOpMode {
         if (gamepad2.a && !prev2a)
         {
             robot.launch();
-            launcher = LaunchPosition.LAUNCHED;
             prev2a = gamepad2.a;
         } else if (!gamepad2.a && prev2a)
         {
