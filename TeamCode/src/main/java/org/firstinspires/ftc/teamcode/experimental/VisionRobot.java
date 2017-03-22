@@ -15,6 +15,8 @@ import org.opencv.core.Size;
 import java.util.LinkedList;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 /**
  * Created by gssmrobotics on 2/20/2017.
  */
@@ -23,8 +25,8 @@ public class VisionRobot extends Robot {
     private State state = State.NULL; //state of robot
     private VisionOpMode opMode = null;
     private long lastStageTime = 0;
-    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DRIVE2DIST,
-            State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
+    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DIST_DRIVE,
+            State.DRIVE2DIST, State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
 
     //PDtoBeacon variables
         private double beaconConfidence = 0.1; //TODO real value or set in init
@@ -53,8 +55,13 @@ public class VisionRobot extends Robot {
         private double leftPower=0, rightPower=0;
         private long time=0;
 
+    //distDrive cached variables
+    private double leftStartPos = 0, rightStartPos = 0;
+    private final int inchDist = (int) (560 / 12.56); //ticks in one inch (theoretically)
+    private final double efficiencyMultiplier = 1; //roughly the efficiency of the drivetrain
+
     //drive2dist cached variables
-    private double stopDist=0;
+    private double stopDist = 0;
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -84,6 +91,7 @@ public class VisionRobot extends Robot {
     public enum State {
         PD_BEACON, //Robot is in the middle of PD
         TIME_DRIVE, //Robot is in middle of timeDrive method
+        DIST_DRIVE, //Robot is driving a set number of encoder ticks
         DRIVE2DIST, //Robot is in middle of drive2dist method
         DETECT_BEACON, //detectBeacon method for driving until beacon is seen
         HIT_BEACON, //hitBeacon method for hitting beacon after approaching it
@@ -317,6 +325,45 @@ public class VisionRobot extends Robot {
         return data.size() != 0 ? sum / data.size() : 0;
     }
 
+    public int dist2ticks(double dist) {
+        return (int) (dist * inchDist * efficiencyMultiplier);
+    }
+
+    /**
+     * Drive a certain amount of encoder ticks with constant power
+     *
+     * @param leftPower  Left drive power (with camera end as front)
+     * @param rightPower Right drive power (with camera end as front)
+     * @param ticks      Number of encoder ticks to drive (on either wheel - which one gets there first)
+     *                   Note: it uses the absolute value to include negative distances
+     */
+    public void distDriveTicks(double leftPower, double rightPower, long ticks) {
+        if (!isBusy()) {
+            setState(State.DIST_DRIVE); //Set state to start going with this op
+
+            //initialize motors
+            this.setLeftPower(leftPower); //TODO check that these are in the same direction
+            this.setRightPower(rightPower);
+
+            //Cached vars
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.leftStartPos = abs(leftMotor.getCurrentPosition());
+            this.rightStartPos = abs(rightMotor.getCurrentPosition());
+        }
+        if (state == State.DIST_DRIVE) {
+            if (abs(leftMotor.getCurrentPosition()) > leftStartPos + ticks
+                    || abs(rightMotor.getCurrentPosition()) > rightStartPos + ticks) {
+                //Distance is up - it's done driving
+                cancel(); //call one function to stop everything instead of doing it myself
+                setState(State.SUCCESS);
+            }
+            //continue driving
+        }
+    }
+
+    //TODO make distDriveTicks compatible with cocntinueAction
+
     /**
      * Drive a certain amount of time with constant power
      *
@@ -481,6 +528,8 @@ public class VisionRobot extends Robot {
             case TIME_DRIVE:
                 timeDrive(leftPower, rightPower, time);
                 break;
+            case DIST_DRIVE:
+                distDriveTicks(leftPower, rightPower, 9); //TODO
             case PD_BEACON:
                 PDtoBeacon(this.Kp, this.Kd, this.time);
                 break;
