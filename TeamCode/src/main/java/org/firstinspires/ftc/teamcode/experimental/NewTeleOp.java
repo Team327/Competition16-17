@@ -179,9 +179,12 @@ public class NewTeleOp extends VisionOpMode {
          */
         if( gamepad1.a && !prev1a)
         {
+            telemetry.addData("wf breakpoint", -1);
+            telemetry.update();
             wallFollow = !wallFollow;
             if(!wallFollow)
                     robot.resetWallFollow();
+            telemetry.addData("wf breakpoint", 0);
             prev1a = gamepad1.a;
         }
         else if (!gamepad1.a && prev1a)
