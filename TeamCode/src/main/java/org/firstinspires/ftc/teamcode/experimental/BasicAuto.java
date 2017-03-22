@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 /**
  * Created by gssmrobotics on 1/14/2017.
  */
 
+@Disabled
 @Autonomous(name = "Basic Autonomoose")
 public class BasicAuto extends OpMode {
     Robot robot;

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Created by gssmrobotics on 12/9/2016.
  */
 
+@Disabled
 @TeleOp(name = "Final TeleOp")
 public class FinalTeleOp extends OpMode
 {
