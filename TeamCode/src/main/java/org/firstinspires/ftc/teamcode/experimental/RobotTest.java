@@ -22,7 +22,7 @@ public class RobotTest extends OpMode {
         robot.launch();
         robot.setLeftPower(1);
         robot.setRightPower(1);
-        telemetry.addData("Data", "Shooter:" + (robot.checkShooterEncoder() ? "Good" : "Bad"));
+        telemetry.addData("Data", "Shooter:" + (robot.checkShooterEncoder() ? "Good" : (robot.shooterIsBusy() ? "Busy" : "Bad")));
         telemetry.addData("Data", "Left:" + (robot.checkLeftEncoder() ? "Good" : "Bad"));
         telemetry.addData("Data", "Right:" + (robot.checkRightEncoder() ? "Good" : "Bad"));
     }
