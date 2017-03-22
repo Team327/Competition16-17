@@ -222,7 +222,8 @@ public class NewTeleOp extends VisionOpMode {
 //            prev2a = gamepad2.a;
 //        }
 
-        robot.launch(gamepad2.a);
+        telemetry.addData("launch breakpoint", 0); telemetry.update();
+        robot.launch(gamepad2.a, telemetry);
 
         //INTAKE----------------------------------------------
 

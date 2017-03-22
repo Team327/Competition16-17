@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import android.sax.TextElementListener;
+
 import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -164,10 +166,13 @@ public class Robot {
      * @param act if true, it will start the launch or shoot (depending on state), else finish current one
      */
 
-    public void launch(boolean act) {
+    public void launch(boolean act, Telemetry telemetry) {
+        telemetry.addData("launch breakpoint", 1); telemetry.update();
         switch(shootState) {
             case STOPPED:
+                telemetry.addData("launch breakpoint", 2); telemetry.update();
                 if(act) {
+                    telemetry.addData("launch breakpoint", 3); telemetry.update();
                     basePos = singleRotation * (shooter.getCurrentPosition() / singleRotation);
                         //finds previous rotation position using truncating division to find number of full rotations
 
@@ -178,42 +183,53 @@ public class Robot {
                 break;
                 //continue to pullback if starting another launch
             case PULLBACK:
+                telemetry.addData("launch breakpoint", 4); telemetry.update();
                 if(needInit) {
+                    telemetry.addData("launch breakpoint", 5); telemetry.update();
                     shooter.setPower(1);
                     needInit = false;
                 }
                 if(shooter.getCurrentPosition() > basePos + pullbackPosition) {
+                    telemetry.addData("launch breakpoint", 5); telemetry.update();
                     //position is past base position plus position for loaded
                     shooter.setPower(0);
-                    shootState = ShootState.LOAD;
+                    shootState = ShootState.COCKED_AND_LOADED; //TODO TODO TODO skip this
                     prevTime = System.currentTimeMillis();
                     needInit = false;
                 }
                 break;
             case LOAD:
+                telemetry.addData("launch breakpoint", 6); telemetry.update();
                 if(needInit) {
+                    telemetry.addData("launch breakpoint", 7); telemetry.update();
                     shooterBlock.setPosition(1);
                     needInit = false;
                 }
                 if(System.currentTimeMillis() > prevTime + shootUpTime) {
+                    telemetry.addData("launch breakpoint", 8); telemetry.update();
                     shootState = ShootState.LOAD_RESET;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
                 }
                 break;
             case LOAD_RESET:
+                telemetry.addData("launch breakpoint", 9); telemetry.update();
                 if(needInit) {
+                    telemetry.addData("launch breakpoint", 10); telemetry.update();
                     shooterBlock.setPosition(0);
                     needInit = false;
                 }
                 if(System.currentTimeMillis() > prevTime + shootDownTime) {
+                    telemetry.addData("launch breakpoint", 11); telemetry.update();
                     shootState = ShootState.COCKED_AND_LOADED;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
                 }
                 break;
             case COCKED_AND_LOADED:
+                telemetry.addData("launch breakpoint", 12); telemetry.update();
                 if(act) {
+                    telemetry.addData("launch breakpoint", 13); telemetry.update();
                     shootState = ShootState.SHOOT;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
@@ -221,17 +237,21 @@ public class Robot {
                 break;
             case SHOOT:
                 if(needInit) {
+                    telemetry.addData("launch breakpoint", 14); telemetry.update();
                     shooter.setPower(1);
                     needInit = false;
                 }
                 if(shooter.getCurrentPosition() > basePos + singleRotation) {
+                    telemetry.addData("launch breakpoint", 15); telemetry.update();
                     shooter.setPower(0);
                     shootState = ShootState.STOPPED;
                     prevTime = System.currentTimeMillis();
                     needInit = false;
                 }
                 break;
+
         }
+        telemetry.addData("launch breakpoint", 16); telemetry.update();
     }
 
 
