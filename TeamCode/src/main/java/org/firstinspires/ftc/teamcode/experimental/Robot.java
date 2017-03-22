@@ -280,27 +280,27 @@ public class Robot {
      * @param drivePower Ideal drve power (will be the average of left and right
      */
     public void wallFollow(double kp, double kd, double ki, double drivePower, Telemetry telemetry) {
-        telemetry.addData("wf breakpoint", 1);
+        telemetry.addData("wf breakpoint", 1); telemetry.update();
         double realDist = Evil.distFromWall(leftDistSeparation, getLeftFrontDist(), getLeftRearDist());
-        telemetry.addData("wf breakpoint", 2);
+        telemetry.addData("wf breakpoint", 2); telemetry.update();
         double error = realDist - goal;
-        telemetry.addData("wf breakpoint", 3);
+        telemetry.addData("wf breakpoint", 3); telemetry.update();
         if(!errors.isEmpty()) {
-            telemetry.addData("wf breakpoint", 4);
+            telemetry.addData("wf breakpoint", 4); telemetry.update();
             //We have enough information to actually wall follow
             double prevError = errors.getLast(); //get previous error for D part
             errors.addLast(error);
             if(errors.size() > errorsPeriod) {
                 errors.removeFirst(); //Remove first to keep constant window size
             }
-            telemetry.addData("wf breakpoint", 5);
+            telemetry.addData("wf breakpoint", 5); telemetry.update();
             double currTime = System.currentTimeMillis(); //current time for use in I and D parts
             double dt = currTime - prevTime; //Time delta
 
             double p = error; //proportional part
-            telemetry.addData("wf breakpoint", 6);
+            telemetry.addData("wf breakpoint", 6); telemetry.update();
             double i = sum(errors) * dt / errors.size(); //integral part
-            telemetry.addData("wf breakpoint", 7);
+            telemetry.addData("wf breakpoint", 7); telemetry.update();
             double d = (error - prevError) / dt; //differential part
 
             double steering = p + i + d;
@@ -309,10 +309,10 @@ public class Robot {
             double leftPower = drivePower - steering;
             double rightPower = drivePower + steering;
 
-            telemetry.addData("wf breakpoint", 8);
+            telemetry.addData("wf breakpoint", 8); telemetry.update();
             setLeftPower(leftPower);
             setRightPower(rightPower);
-            telemetry.addData("wf breakpoint", 9);
+            telemetry.addData("wf breakpoint", 9); telemetry.update();
             //TODO check if either goes out of bound so it doesn't just lose power to one side (maybe not necessary)
         } else {
             errors.addLast(error);
