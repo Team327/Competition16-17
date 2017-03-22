@@ -23,8 +23,8 @@ public class VisionRobot extends Robot {
     private State state = State.NULL; //state of robot
     private VisionOpMode opMode = null;
     private long lastStageTime = 0;
-    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DETECT_BEACON,
-            State.HIT_BEACON, State.BACKUP}; //TODO add more
+    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DRIVE2DIST,
+            State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
 
     //PDtoBeacon variables
         private double beaconConfidence = 0.1; //TODO real value or set in init
@@ -52,6 +52,9 @@ public class VisionRobot extends Robot {
     //timeDrive cached variables
         private double leftPower=0, rightPower=0;
         private long time=0;
+
+    //drive2dist cached variables
+    private double stopDist=0;
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -81,6 +84,7 @@ public class VisionRobot extends Robot {
     public enum State {
         PD_BEACON, //Robot is in the middle of PD
         TIME_DRIVE, //Robot is in middle of timeDrive method
+        DRIVE2DIST, //Robot is in middle of drive2dist method
         DETECT_BEACON, //detectBeacon method for driving until beacon is seen
         HIT_BEACON, //hitBeacon method for hitting beacon after approaching it
         BACKUP, //backupFromBeacon method for backing up from beacon after hitting it
@@ -337,6 +341,44 @@ public class VisionRobot extends Robot {
             if(System.currentTimeMillis() >= lastStageTime + time) {
                 //Time's up - it's done driving
                 cancel(); //call one function to stop everything instead of doing it myself
+                setState(State.SUCCESS);
+            }
+            //continue driving
+        }
+        //TODO can we just disregard bad ops?
+    }
+
+    /**
+     * Drive until frontDist is less than position
+     *
+     * @param leftPower  Left drive power (with camera end as front)
+     * @param rightPower Right drive power (with camera end as front)
+     * @param dist distance (cm) from any object at front
+     * @param time max time to drive
+     */
+    public void drive2dist(double leftPower, double rightPower, double dist, long time) {
+        if(!isBusy()) {
+            setState(State.DRIVE2DIST); //Set state to start going with this op
+
+            //initialize motors
+            this.setLeftPower(leftPower); //TODO check that these are in the same direction
+            this.setRightPower(rightPower);
+
+            //Cached vars
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.stopDist = dist;
+            this.time = time;
+        }
+        if(state == State.DRIVE2DIST) {
+            if(System.currentTimeMillis() >= lastStageTime + time) {
+                //Time's up - it's done driving
+                cancel(); //call one function to stop everything instead of doing it myself
+                setState(State.SUCCESS);
+            }
+            if(getFrontDist() <= dist) {
+                //distance is right
+                cancel();
                 setState(State.SUCCESS);
             }
             //continue driving

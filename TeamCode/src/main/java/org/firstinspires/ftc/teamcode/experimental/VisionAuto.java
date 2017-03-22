@@ -48,21 +48,15 @@ public class VisionAuto extends LinearVisionOpMode{
         //init the robot
         this.initialize();
         waitForVisionStart(); //TODO is this necessary
+
         //drive to ball
-        while(visRobot.getFrontDist() > 12 )
-        {
-            visRobot.setRightPower(1);
-            visRobot.setLeftPower(1);
+        visRobot.drive2dist(1, 1, 12, 1500);
+        while(visRobot.isBusy()) {
+            visRobot.continueAction();
+            telemetry.addData("auto status", "drive2dist");
         }
-        visRobot.brake();
-
-
-
+        telemetry.addData("auto status", "finished drive2dist");
 
 
     }
-
-
-
-
 }
