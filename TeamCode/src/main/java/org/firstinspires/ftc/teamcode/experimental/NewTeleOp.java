@@ -170,7 +170,7 @@ public class NewTeleOp extends VisionOpMode {
          */
         else
         {
-            robot.wallFollow(kp, ki, kd, gamepad1.left_stick_y);
+            robot.wallFollow(kp, ki, kd, gamepad1.left_stick_y, telemetry);
         }
 
         /**
