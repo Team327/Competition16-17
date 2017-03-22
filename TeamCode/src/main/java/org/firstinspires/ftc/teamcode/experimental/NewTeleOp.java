@@ -226,13 +226,11 @@ public class NewTeleOp extends VisionOpMode {
         if(gamepad1.left_bumper)
         {
             robot.intake(1);
-        }
-        /**
-         * Activates Intake Reversed if Right bumper
-         */
-        if(gamepad1.right_bumper)
+        } else if (gamepad1.right_bumper)
         {
             robot.intake(-1);
+        } else {
+            robot.intake(0);
         }
 
         //LIFT------------------------------------------------
