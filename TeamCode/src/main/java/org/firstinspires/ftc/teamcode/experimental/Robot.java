@@ -31,7 +31,14 @@ public class Robot {
     private final double goal = 4; //Goal distance in CM
     private final double leftDistSeparation = 30; //TODO measure distance between sensors on bot
 
-    private int position;
+    private final double gearRatio = 1.5;  //Motor rotations for geared rotation
+    private final double encoderRotation = 1120; //number of encoder clicks per rotation
+
+    private int leftLastPos = 0;
+    private int rightLastPos = 0;
+    private int shootLastPos = 0;
+
+
 
     public Robot(HardwareMap map)
     {
@@ -57,9 +64,15 @@ public class Robot {
 
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         caroline.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -95,26 +108,32 @@ public class Robot {
 
     //SHOOTER-------------------------------------------------
 
-    public void shooterPower(double power)
-    {
-        shooter.setPower(power);
+    //debug
+    public int getShooterPos() {
+        return shooter.getCurrentPosition();
     }
 
-    public void launchBall()
-    {
-        position = (int) (-1);
-        shooter.setTargetPosition(shooter.getCurrentPosition() + position);
-        shooter.setPower(-1);
 
+    public void setShooterPos(double degrees)
+    {
+        shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        int encoderClicks = (int) ((degrees / 360) * (gearRatio * encoderRotation));
+
+        shooter.setTargetPosition(shooter.getCurrentPosition() - encoderClicks);
+        shooter.setPower(1);
     }
 
-    public void pullBack()
-    {
-        position = (int) (-2);
-        shooter.setTargetPosition(shooter.getCurrentPosition() + position);
-        shooter.setPower(-1);
 
+    public void launch()
+    {
+
+        if (!shooterIsBusy()) {
+            this.setShooterPos(360);
+        }
     }
+
 
     public void liftBlock()
     {
@@ -175,6 +194,36 @@ public class Robot {
         forward = false;
     }
 
+    public boolean checkLeftEncoder() {
+        if (leftMotor.isBusy()) {
+            if (leftMotor.getCurrentPosition() == leftLastPos) {
+                return false;
+            }
+            leftLastPos = leftMotor.getCurrentPosition();
+        }
+        return true;
+    }
+
+    public boolean checkRightEncoder() {
+        if (rightMotor.isBusy()) {
+            if (rightMotor.getCurrentPosition() == rightLastPos) {
+                return false;
+            }
+            rightLastPos = rightMotor.getCurrentPosition();
+        }
+        return true;
+    }
+
+    public boolean checkShooterEncoder() {
+        if (shooter.isBusy()) {
+            if (shooter.getCurrentPosition() == shootLastPos) {
+                return false;
+            }
+            shootLastPos = shooter.getCurrentPosition();
+        }
+        return true;
+    }
+
 
 
     //BEACON--------------------------------------------------
@@ -187,7 +236,7 @@ public class Robot {
 
     public void retractBeacon()
     {
-        beaconPusher.setPosition(1);        //TODO ENSURE POSITION
+        beaconPusher.setPosition(.75);        //TODO ENSURE POSITION
     }
 
 
@@ -280,7 +329,12 @@ public class Robot {
         }
     }
 
-    //DEPRECATED----------------------------------DEPRECATED----------------------------------DEPRECATED----------------------------------DEPRECATED----------------------------------DEPRECATED
+
+    /**********************************************************************************************
+     * \
+     * DEPRECATED SHIT                                          *
+     * \
+     **********************************************************************************************/
 
     @Deprecated
     public void stopShooter ()

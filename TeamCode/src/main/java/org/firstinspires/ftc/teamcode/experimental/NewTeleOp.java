@@ -14,7 +14,7 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 public class NewTeleOp extends VisionOpMode {
     Robot robot;
 
-    private boolean prev2b; //Gamepad 2
+    private boolean prev2b, prev2a; //Gamepad 2
     private boolean prev1a, prev1y, prev1b; //Gamepad 1
 
     //Telemetry
@@ -25,7 +25,7 @@ public class NewTeleOp extends VisionOpMode {
 
     private double kp, ki, kd;
 
-    private enum LaunchPosition {LAUNCHED, PULLED_BACK, LOADED_BALL, BALL_READY}
+    private enum LaunchPosition {LAUNCHED, READY}
     private LaunchPosition launcher;
     private double loadTime;
     private final double loadDelay = 500;               //TODO FIND RIGHT TIME
@@ -42,7 +42,7 @@ public class NewTeleOp extends VisionOpMode {
         invertedDrive = true;
         wallFollow = false;
         capBallServoOut = false;
-        launcher = LaunchPosition.BALL_READY;
+        launcher = LaunchPosition.READY;
         loadTime = System.currentTimeMillis();
 
         //PID Constants
@@ -55,7 +55,7 @@ public class NewTeleOp extends VisionOpMode {
         prev1b = false;
         prev1y = false;
         prev2b = false;
-
+        prev2a = false;
 
 
 
@@ -148,7 +148,8 @@ public class NewTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
-        telemetry.addData("SHOOTER POS:", launcher);
+        telemetry.addData("ENCODER:", robot.getShooterPos());
+        telemetry.addData("SHOOTER STATUS:", launcher);
         telemetry.addData("BEACON PUSHER OUT:", beaconOut);
         telemetry.addData("CAP BALL SERVO OUT:", capBallServoOut);
         telemetry.addData("INVERTED DRIVE:", invertedDrive);
@@ -203,48 +204,17 @@ public class NewTeleOp extends VisionOpMode {
             prev1y = gamepad1.y;
         }
 
-        //OOTER---------------------------------------------
-        /**
-         * Should stop the shooter?
-         //*
-         if (!robot.shooterIsBusy())
+        //SHOOTER---------------------------------------------
+
+
+        if (gamepad2.a && !prev2a)
         {
-            robot.shooterPower(0);
-        }
-         /**
-         * Launches ball if loaded
-         * Hold A for continuous Shooting
-         *//*
-        if(gamepad2.a && launcher == LaunchPosition.BALL_READY)
-        {
-            robot.launchBall();                    //TODO ENSURE POSITION
+            robot.launch();
             launcher = LaunchPosition.LAUNCHED;
-        }
-        /**
-         * Pulls back shooter if launched
-         *//*
-        else if(launcher == LaunchPosition.LAUNCHED && !robot.shooterIsBusy())
+            prev2a = gamepad2.a;
+        } else if (!gamepad2.a && prev2a)
         {
-            robot.pullBack();                    //TODO ENSURE POSITION
-            launcher = LaunchPosition.PULLED_BACK;
-        }
-        /**
-         * Loads ball if pulled back and A is pressed
-         *//*
-        else if (gamepad2.a && launcher == LaunchPosition.PULLED_BACK && !robot.shooterIsBusy())
-        {
-            loadTime = System.currentTimeMillis();
-            robot.liftBlock();
-            launcher = LaunchPosition.LOADED_BALL;
-        }
-         /**
-         * Closes off loader after time delay
-         *//*
-        else if(launcher == LaunchPosition.LOADED_BALL &&
-                            System.currentTimeMillis() - loadDelay >= loadTime)
-        {
-            robot.lowerBlock();
-            launcher = LaunchPosition.BALL_READY;
+            prev2a = gamepad2.a;
         }
 
 
