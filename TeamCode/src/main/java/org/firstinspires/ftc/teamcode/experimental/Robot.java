@@ -32,7 +32,7 @@ public class Robot {
     private final double leftDistSeparation = 30; //TODO measure distance between sensors on bot
 
     private final double gearRatio = 1.5;  //Motor rotations for geared rotation
-    private final double encoderRotation = 1120; //number of encoder clicks per rotation
+    private final int encoderRotation = 1120; //number of encoder clicks per rotation
 
     private int leftLastPos = 0;
     private int rightLastPos = 0;
@@ -116,10 +116,13 @@ public class Robot {
 
     public void setShooterPos(double degrees)
     {
+        int currentPos = shooter.getCurrentPosition();
+        int prevFullRotation = currentPos / (int)(gearRatio * encoderRotation); //truncating division to get prev
+
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        int encoderClicks = (int) ((degrees / 360) * (gearRatio * encoderRotation));
+        int encoderClicks = prevFullRotation + (int) ((degrees / 360) * (gearRatio * encoderRotation));
 
         shooter.setTargetPosition(shooter.getCurrentPosition() - encoderClicks);
         shooter.setPower(1);
@@ -128,7 +131,6 @@ public class Robot {
 
     public void launch()
     {
-
         if (!shooterIsBusy()) {
             this.setShooterPos(360);
         }
@@ -341,7 +343,7 @@ public class Robot {
 
     /**********************************************************************************************
      * \
-     * DEPRECATED SHIT                                          *
+     * DEPRECATED STUFF (DEPRECATED: SHIT)                                                        *
      * \
      **********************************************************************************************/
 
