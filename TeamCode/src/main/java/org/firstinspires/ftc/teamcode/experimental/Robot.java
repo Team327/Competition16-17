@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -31,14 +32,36 @@ public class Robot {
     private final double goal = 4; //Goal distance in CM
     private final double leftDistSeparation = 30; //TODO measure distance between sensors on bot
 
-    private final double gearRatio = 1.5;  //Motor rotations for geared rotation
-    private final int encoderRotation = 1120; //number of encoder clicks per rotation
-
     private int leftLastPos = 0;
     private int rightLastPos = 0;
     private int shootLastPos = 0;
 
+    //Shooting variables
+    private ShootState shootState = ShootState.STOPPED;
+    private long shootPrevTime = 0;
+    private boolean needInit = false; //true when the robot needs init on moving to next stage
+    private int basePos = 0; //tick position of a full rotation before this iteration
 
+    private final double gearRatio = 1.5;  //Motor rotations for geared rotation
+    private final int encoderRotation = 1120; //number of encoder clicks per rotation
+
+    private final double shootBlockUp = 1; //servo up position //TODO find
+    private final double shootBlockDown = 0; //servo down position //TODO find
+    private final long shootUpTime = 200; //time for servo up //TODO find
+    private final long shootDownTime = 200; //time for servo down //TODO find
+
+    private final int singleRotation = (int) (gearRatio * encoderRotation);
+    private final int pullbackPosition =
+            (int) ((300.0 / 360) * singleRotation); //Degrees of position when shooter is in pullback position //TODO find
+
+    public enum ShootState {
+        STOPPED, //stopped and ready to shoot
+        PULLBACK, //first drive section to drive until almost ready to shoot
+        LOAD, //servo allows ball in
+        LOAD_RESET, //servo moves back to prepare for next ball
+        COCKED_AND_LOADED, //next press of a will shoot a ball
+        SHOOT //finishes shoot rotation
+    }
 
     public Robot(HardwareMap map)
     {
@@ -133,6 +156,81 @@ public class Robot {
     {
         if (!shooterIsBusy()) {
             this.setShooterPos(360);
+        }
+    }
+
+    /**
+     * Launches ball in two phases of pressing a (unless a is held)
+     * @param act if true, it will start the launch or shoot (depending on state), else finish current one
+     */
+
+    public void launch(boolean act) {
+        switch(shootState) {
+            case STOPPED:
+                if(act) {
+                    basePos = singleRotation * (shooter.getCurrentPosition() / singleRotation);
+                        //finds previous rotation position using truncating division to find number of full rotations
+
+                    shootState = ShootState.PULLBACK;
+                    prevTime = System.currentTimeMillis();
+                    needInit = true;
+                }
+                break;
+                //continue to pullback if starting another launch
+            case PULLBACK:
+                if(needInit) {
+                    shooter.setPower(1);
+                    needInit = false;
+                }
+                if(shooter.getCurrentPosition() > basePos + pullbackPosition) {
+                    //position is past base position plus position for loaded
+                    shooter.setPower(0);
+                    shootState = ShootState.LOAD;
+                    prevTime = System.currentTimeMillis();
+                    needInit = false;
+                }
+                break;
+            case LOAD:
+                if(needInit) {
+                    shooterBlock.setPosition(1);
+                    needInit = false;
+                }
+                if(System.currentTimeMillis() > prevTime + shootUpTime) {
+                    shootState = ShootState.LOAD_RESET;
+                    prevTime = System.currentTimeMillis();
+                    needInit = true;
+                }
+                break;
+            case LOAD_RESET:
+                if(needInit) {
+                    shooterBlock.setPosition(0);
+                    needInit = false;
+                }
+                if(System.currentTimeMillis() > prevTime + shootDownTime) {
+                    shootState = ShootState.COCKED_AND_LOADED;
+                    prevTime = System.currentTimeMillis();
+                    needInit = true;
+                }
+                break;
+            case COCKED_AND_LOADED:
+                if(act) {
+                    shootState = ShootState.SHOOT;
+                    prevTime = System.currentTimeMillis();
+                    needInit = true;
+                }
+                break;
+            case SHOOT:
+                if(needInit) {
+                    shooter.setPower(1);
+                    needInit = false;
+                }
+                if(shooter.getCurrentPosition() > basePos + singleRotation) {
+                    shooter.setPower(0);
+                    shootState = ShootState.STOPPED;
+                    prevTime = System.currentTimeMillis();
+                    needInit = false;
+                }
+                break;
         }
     }
 
