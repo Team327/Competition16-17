@@ -54,6 +54,8 @@ public class DefenseAuto extends LinearVisionOpMode {
         status = updateTele(status, "Started");
         time = System.currentTimeMillis();
 
+        //Drive to The Vortex
+
         int direction = (communism ? -1 : 1);
         VisBot.distDriveTicks(direction, direction, VisBot.dist2ticks(60));
         status = updateTele(status, "Driving");
@@ -64,6 +66,7 @@ public class DefenseAuto extends LinearVisionOpMode {
 
         }
 
+        //Shoot into Vortex
 
         //copied from Vision Auto
         for (int i = 1; i <= balls2shoot; i++) {
@@ -79,7 +82,21 @@ public class DefenseAuto extends LinearVisionOpMode {
             }
         }
 
-        VisBot.distDriveTicks(0.5, -0.5, VisBot.angle2ticks(45));
+        //Turn towards beacons
+
+        if (!communism) {
+            status = updateTele(status, "Adjusting for Blue side");
+            VisBot.distDriveTicks(.5, .5, VisBot.dist2ticks(18));
+            while (VisBot.isBusy()) {
+                VisBot.continueAction();
+
+            }
+        }
+
+        //red or blue direction
+        double beaconAngle = (communism ? 0.5 : -0.5);
+
+        VisBot.distDriveTicks(beaconAngle, -beaconAngle, VisBot.angle2ticks(45));
         status = updateTele(status, "Turning Around Ball");
         while (VisBot.isBusy()) {
             VisBot.continueAction();
@@ -87,28 +104,39 @@ public class DefenseAuto extends LinearVisionOpMode {
         while (System.currentTimeMillis() < time + 10000) {
         }
 
+        //Run over to beacons
+
+        double speed = (communism ? -.8 : .8);
+
         status = updateTele(status, "Running to block Beacon");
-        VisBot.distDriveTicks(-.8, -.8, VisBot.dist2ticks(54));
+        VisBot.distDriveTicks(speed, speed, VisBot.dist2ticks(54));
         while (VisBot.isBusy()) {
             VisBot.continueAction();
         }
+
+        //Turn to align with beacons
+
+        double alignmentAngle = (communism ? -0.5 : 0.5);
 
         status = updateTele(status, "Turning along beacons");
-        VisBot.distDriveTicks(-0.5, 0.5, VisBot.angle2ticks(90));
+        VisBot.distDriveTicks(alignmentAngle, -alignmentAngle, VisBot.angle2ticks(90));
         while (VisBot.isBusy()) {
             VisBot.continueAction();
         }
 
-        time = System.currentTimeMillis();
-        while (System.currentTimeMillis() < time + 1000) {
-            VisBot.wallFollow(Kp, Kd, Ki, 1, telemetry);
-        }
-        VisBot.resetWallFollow();
-        time = System.currentTimeMillis();
-        while (System.currentTimeMillis() < time + 1000) {
-            VisBot.wallFollow(Kp, Kd, Ki, -1, telemetry);
-        }
+        //Drive between beacons
 
+        long timeBeacon = System.currentTimeMillis();
+        direction = (communism ? 1 : -1);
+        while (System.currentTimeMillis() < time + 2800) {
+
+            timeBeacon = System.currentTimeMillis();
+            while (System.currentTimeMillis() < timeBeacon + 1000) {
+                VisBot.wallFollow(Kp, Kd, Ki, direction, telemetry);
+            }
+            direction *= -1;
+        }
+        VisBot.brake();
 
     }
 
