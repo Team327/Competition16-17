@@ -12,6 +12,7 @@ public class DefenseAuto extends LinearVisionOpMode {
 
     static final double Kp = 1;
     static final double Kd = -1;
+    static final double Ki = 1;
     //telemetry
     private Telemetry.Item status;
 
@@ -92,8 +93,25 @@ public class DefenseAuto extends LinearVisionOpMode {
             VisBot.continueAction();
         }
 
+        status = updateTele(status, "Turning along beacons");
+        VisBot.distDriveTicks(-0.5, 0.5, VisBot.angle2ticks(90));
+        while (VisBot.isBusy()) {
+            VisBot.continueAction();
+        }
+
+        time = System.currentTimeMillis();
+        while (System.currentTimeMillis() < time + 1000) {
+            VisBot.wallFollow(Kp, Kd, Ki, 1, telemetry);
+        }
+        VisBot.resetWallFollow();
+        time = System.currentTimeMillis();
+        while (System.currentTimeMillis() < time + 1000) {
+            VisBot.wallFollow(Kp, Kd, Ki, -1, telemetry);
+        }
+
 
     }
+
 
     /**
      * Updates a telemetry Item's Message with the desired Caption
