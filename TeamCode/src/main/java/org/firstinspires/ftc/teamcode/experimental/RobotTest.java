@@ -19,7 +19,7 @@ public class RobotTest extends OpMode {
 
     @Override
     public void loop() {
-        robot.launch();
+        robot.launch(true, telemetry);
         robot.setLeftPower(1);
         robot.setRightPower(1);
         telemetry.addData("Data", "Shooter:" + (robot.checkShooterEncoder() ? "Good" : (robot.shooterIsBusy() ? "Busy" : "Bad")));
