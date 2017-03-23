@@ -18,7 +18,9 @@ public class VisionTeleOp extends VisionOpMode {
     private int driveTicks = 0;
     private int driveTime=0;
     private double drive2dist = 30;
-    private int driveTimeInterval=0;
+    private int driveTimeInterval=500;
+    private int driveTicksInterval=500;
+    private double drive2distInterval=2;
     private boolean prevDLeft=false;
     private boolean prevDRight=false;
 
@@ -47,7 +49,7 @@ public class VisionTeleOp extends VisionOpMode {
      *      Start:
      *
      *      Back:
-     *
+     *          Cancel
      *      Left Analog Y:
      *          Left Side Drive (Wall Follow Power)
      *      Right Analog Y:
@@ -137,78 +139,90 @@ public class VisionTeleOp extends VisionOpMode {
         //says that no button is pressed
         telemetry.addData("Drive Time:", driveTime);
 
+        //Cancels action
+        if(gamepad1.back || gamepad2.back)
+        {
+            visionBot.cancel();
+        }
+
         //PD to Beacon
-        if(gamepad1.start)
+        else if(gamepad2.start)
         {
             visionBot.PDtoBeacon(Kp, Kd, 5000);
-
         }
 
         //Hit beacon
-        else if(gamepad1.dpad_up)
+        else if(gamepad2.dpad_up)
         {
             visionBot.hitBeacon(power, power, 5000);
 
         }
 
         //Backup from Beacon
-        else if(gamepad1.dpad_down)
+        else if(gamepad2.dpad_down)
         {
             visionBot.backupFromBeacon(power, power, 5000);
-
         }
 
         //Detect beacon
-        else if(gamepad2.x)
+        else if(gamepad2.left_bumper)
         {
             visionBot.detectBeacon( -power, power, 5000);
-
         }
 
-        //Timed Drive
+        //Time/dist Drive
         //Detracts from the drive time
-
-        else if(gamepad1.dpad_left && !prevDLeft)
+        else if(gamepad2.dpad_left && !prevDLeft)
         {
-            if(driveTime > driveTimeInterval)
-            {
+            if(gamepad2.x && driveTicks > driveTicksInterval)  {
+                //change encoder dist
+                driveTicks -= driveTicksInterval;
+            } else if(gamepad2.y && drive2dist > drive2distInterval) {
+                //change drive2dist
+                drive2dist -= drive2distInterval;
+            } else if (driveTime > driveTimeInterval) {
+                //neither x nor y pressed -> change drive time
                 driveTime -= driveTimeInterval;
             }
-            prevDLeft = gamepad1.dpad_left;
+            prevDLeft = gamepad2.dpad_left;
         }
-        else if(!gamepad1.dpad_left && prevDLeft)
+        else if(!gamepad2.dpad_left && prevDLeft)
         {
-            prevDLeft = gamepad1.dpad_left;
-        }
-
-
-
-        //adds to the drive time
-
-        else if(gamepad1.dpad_right && !prevDRight)
-        {
-            driveTime += driveTimeInterval;
-
-            prevDRight = gamepad1.dpad_right;
-        }
-        else if(!gamepad1.dpad_right && prevDRight)
-        {
-            prevDRight = gamepad1.dpad_right;
+            prevDLeft = gamepad2.dpad_left;
         }
 
 
-        //Drives for the driveTime
-        else if(gamepad1.right_bumper)
+
+        //adds to the drive parameters
+        else if(gamepad2.dpad_right && !prevDRight)
         {
-            if(gamepad1.y)
+            if(gamepad2.x) {
+                //change encoder dist
+                driveTicks += driveTicksInterval;
+            } else if(gamepad2.y) {
+                //change drive2dist
+                drive2dist += drive2distInterval;
+            } else {
+                driveTime += driveTimeInterval;
+            }
+            prevDRight = gamepad2.dpad_right;
+        }
+        else if(!gamepad2.dpad_right && prevDRight)
+        {
+            prevDRight = gamepad2.dpad_right;
+        }
+
+
+        //Drives for the certain amount
+        else if(gamepad2.right_bumper)
+        {
+            if(gamepad2.x) {
                 visionBot.distDriveTicks(power, power, driveTicks);
-            visionBot.timeDrive(0.7,0.7, driveTime);
-        }
-
-        //Cancels action
-        else if(gamepad1.back)
-        {
-            visionBot.cancel();
+            } else if(gamepad2.y) {
+                visionBot.drive2dist(power, power, drive2dist, 5000, power>0);
+            } else {
+                visionBot.timeDrive(power, power, driveTime);
+            }
         }
 
         //continues previous action
