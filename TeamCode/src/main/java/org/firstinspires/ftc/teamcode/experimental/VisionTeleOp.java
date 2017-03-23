@@ -14,10 +14,14 @@ public class VisionTeleOp extends VisionOpMode {
     private NewTeleOp teleOp=null;
     private double Kp=0;
     private double Kd=0;
+    private double power = 0.5;
+    private int driveTicks = 0;
     private int driveTime=0;
+    private double drive2dist = 30;
     private int driveTimeInterval=0;
     private boolean prevDLeft=false;
     private boolean prevDRight=false;
+
     private enum varChange {DRIVE_TIME, LEFT_POWER, RIGHT_POWER}
 
     /**
@@ -62,83 +66,35 @@ public class VisionTeleOp extends VisionOpMode {
      *      B:
      *          Beacon out (toggle)
      *      X:
-     *
+     *          Hold to use encoder dist
      *      Y:
-     *
+     *          Hold to use drive2dist
      *      Dpad Up:
-     *
+     *          Hit Beacon
      *      Dpad Down:
-     *
+     *          Backup from Beacon
      *      Dpad Left:
-     *
+     *          Subtract from drive time
      *      Dpad Right:
-     *
+     *          Add to drive time
      *      Start:
-     *
+     *          PD to beacon
      *      Back:
-     *
+     *          Cancel
      *      Left Analog Y:
      *
      *      Right Analog Y:
      *
      *      Left Bumper:
-     *
+     *          Detect Beacon
      *      Right Bumper:
-     *
+     *          Time/Dist/2Dist drive (depends on key held x->dist, y->2dist, none->time)
      *      Left Trigger:
      *
      *      Right Trigger:
      *
      *
      */
-
-    /**
-     * Vision Stuff //TODO resolve conflicts
-     * ------------
-     *
-     *  Left Bumper:
-     *          Hit beacon
-     *      Y:
-     *          PD to Beacon
-     *      X:
-     *          Detect Beacon
-     *      Dpad Up:
-     *          Hit beacon
-     *      Dpad Down:
-     *          Backup from beacon
-     *      Dpad Left:
-     *          Subtract from drive time
-     *      Dpad Right:
-     *          Add to drive time
-     *      Back:
-     *          Cancel
-     */
-
-//    /**
-//     * Tank Drive System Description
-//     *
-//     * Gamepad 1 (Driver):
-//     *      Left Joystick y: Left Drive
-//     *      Right Joystick y: Right Drive
-//     *
-//     *      A:
-//     *          Flipper down
-//     *      B:
-//     *          Flipper up
-//     *      Right Bumper:
-//     *          Invert Drive
-
-//     *
-//     *
-//     * Gamepad 2 (Operator):
-//     *      Triggers:
-//     *          Right (Shoot direction)
-//     *          Left (Reverse)
-//     *          (Right - Left is direction)
-//     *
-//     *
-//     *
-//     */
 
     @Override
     public void init()
@@ -162,9 +118,6 @@ public class VisionTeleOp extends VisionOpMode {
         driveTimeInterval = 500;
         prevDLeft = false;
         prevDRight = false;
-
-
-
     }
 
     public boolean pressed(Gamepad g)
@@ -178,9 +131,6 @@ public class VisionTeleOp extends VisionOpMode {
     @Override
     public void loop()
     {
-        //engages loop for regular teleop functions
-        teleOp.loop();
-
         //adds available telemetry from visionBot
         visionBot.logData();
 
@@ -188,7 +138,7 @@ public class VisionTeleOp extends VisionOpMode {
         telemetry.addData("Drive Time:", driveTime);
 
         //PD to Beacon
-        if(gamepad1.y)
+        if(gamepad1.start)
         {
             visionBot.PDtoBeacon(Kp, Kd, 5000);
 
@@ -197,21 +147,21 @@ public class VisionTeleOp extends VisionOpMode {
         //Hit beacon
         else if(gamepad1.dpad_up)
         {
-            visionBot.hitBeacon(0.5, 0.5, 5000);
+            visionBot.hitBeacon(power, power, 5000);
 
         }
 
         //Backup from Beacon
         else if(gamepad1.dpad_down)
         {
-            visionBot.backupFromBeacon(0.5, 0.5, 5000);
+            visionBot.backupFromBeacon(power, power, 5000);
 
         }
 
         //Detect beacon
-        else if(gamepad1.x)
+        else if(gamepad2.x)
         {
-            visionBot.detectBeacon( -0.5, 0.5, 5000);
+            visionBot.detectBeacon( -power, power, 5000);
 
         }
 
@@ -248,8 +198,10 @@ public class VisionTeleOp extends VisionOpMode {
 
 
         //Drives for the driveTime
-        else if(gamepad1.left_bumper)
+        else if(gamepad1.right_bumper)
         {
+            if(gamepad1.y)
+                visionBot.distDriveTicks(power, power, driveTicks);
             visionBot.timeDrive(0.7,0.7, driveTime);
         }
 
@@ -263,6 +215,11 @@ public class VisionTeleOp extends VisionOpMode {
         else
         {
             visionBot.continueAction();
+        }
+
+        if(!visionBot.isBusy()) {
+            //engages loop for regular teleop functions
+            teleOp.loop();
         }
     }
 }
