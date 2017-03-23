@@ -48,6 +48,7 @@ public class VisionAuto extends LinearVisionOpMode{
         //init the robot
         this.initialize();
         waitForVisionStart(); //TODO is this necessary
+        waitForStart();
         telemetry.addData("Status","Passed wait for vision start"); telemetry.update();
 
         boolean x = true; //TODO remove
@@ -59,7 +60,7 @@ public class VisionAuto extends LinearVisionOpMode{
         while (visRobot.isBusy()) {
             telemetry.addData("auto status", "drive past ball");
             visRobot.continueAction();
-            visRobot.safetyController(); //TODO remove
+            //*************visRobot.safetyController(); //TODO remove
         }
         telemetry.addData("visbot status", visRobot.getState());
         telemetry.addData("auto status", "done drive past ball");

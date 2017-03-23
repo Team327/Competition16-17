@@ -181,20 +181,19 @@ public class NewTeleOp extends VisionOpMode {
          * toggle control for wall follow (Compatible with inversion)
          * resets wall follow data when turned off
          */
-//        if( gamepad1.a && !prev1a)
-//        {
-//            telemetry.addData("wf breakpoint", -1); telemetry.update();
-//            wallFollow = !wallFollow;
-//            if(!wallFollow)
-//                    robot.resetWallFollow();
-//            telemetry.addData("wf breakpoint", 0);
-//            prev1a = gamepad1.a;
-//        }
-//        else if (!gamepad1.a && prev1a)
-//        {
-//            prev1a = gamepad1.a;
-//        }
-        //TODO put this back once it works
+        if( gamepad1.a && !prev1a)
+        {
+            telemetry.addData("wf breakpoint", -1); telemetry.update();
+            wallFollow = !wallFollow;
+            if(!wallFollow)
+                    robot.resetWallFollow();
+            telemetry.addData("wf breakpoint", 0);
+            prev1a = gamepad1.a;
+        }
+        else if (!gamepad1.a && prev1a)
+        {
+            prev1a = gamepad1.a;
+        }
 
 
         /**
