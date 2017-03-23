@@ -56,7 +56,8 @@ public class VisionAuto extends LinearVisionOpMode{
         //drive forward 4 feet
         //visRobot.distDriveTicks(1, 1, visRobot.dist2ticks(72));
         visRobot.distDriveTicks(1, 1, visRobot.dist2ticks(36)); //TODO remove
-        telemetry.addData("Status","Passed dist 2 ticks"); telemetry.update();
+        telemetry.addData("Status", "Passed dist 2 ticks");
+        telemetry.update();
         while (visRobot.isBusy()) {
             telemetry.addData("auto status", "drive past ball");
             visRobot.continueAction();
@@ -65,7 +66,7 @@ public class VisionAuto extends LinearVisionOpMode{
         telemetry.addData("visbot status", visRobot.getState());
         telemetry.addData("auto status", "done drive past ball");
 
-        if(x)return;
+        if (x) return;
 
         //turn 90 degrees (roughly 2 feet?)
         visRobot.distDriveTicks(-1, 1, visRobot.dist2ticks(24));
@@ -136,7 +137,7 @@ public class VisionAuto extends LinearVisionOpMode{
         telemetry.addData("auto status", "done backup to basket");
 
         //shoot
-        for(int i = 1; i <= balls2shoot; i++) {
+        for (int i = 1; i <= balls2shoot; i++) {
             while (visRobot.getShootState() != Robot.ShootState.COCKED_AND_LOADED) {
                 //Start shooting a ball (get to COCKED_AND_READY state)
                 telemetry.addData("auto status", "shooting ball " + i);
