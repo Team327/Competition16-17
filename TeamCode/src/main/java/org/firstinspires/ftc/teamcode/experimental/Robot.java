@@ -66,27 +66,34 @@ public class Robot {
 
     public Robot(HardwareMap map)
     {
+        hardwareInit(map);
+
+        //wall follow init
+        errors = new LinkedList<>();
+    }
+
+    protected void hardwareInit(HardwareMap map) {
         //Hardware
-            //motors
+        //motors
         leftMotor = map.dcMotor.get("left");
         rightMotor = map.dcMotor.get("right");
         shooter = map.dcMotor.get("shooter");
         caroline = map.dcMotor.get("caroline");
         intake = map.dcMotor.get("intake");
-            //servos
+        //servos
         beaconPusher = map.servo.get("beaconPusher");
         shooterBlock = map.servo.get("shooterBlock");
         capHolder = map.servo.get("capHolder");
 
         shooterBlock.setPosition(shootBlockPos);
 
-            //distance sensors
+        //distance sensors
         frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
         leftFrontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftFrontDist"));
         leftRearDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftRearDist"));
 
         //DEPRECATED sideFlipperMotor = map.dcMotor.get("flipper");
-            //DEPRECATED beaconHitter = map.dcMotor.get("beacon");
+        //DEPRECATED beaconHitter = map.dcMotor.get("beacon");
 
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -105,12 +112,10 @@ public class Robot {
         caroline.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //wall follow init
-        errors = new LinkedList<>();
-
-            //DEPRECATED beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            //DEPRECATED sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //DEPRECATED beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        //DEPRECATED sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
+
     /**
      * Uses range sensor to find distance from front sensor
      * @return returns distance in cm detected by front sensor

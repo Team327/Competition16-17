@@ -124,7 +124,7 @@ public class VisionRobot extends Robot {
 
 
 
-    private void setState(State state) {
+    public void setState(State state) {
         this.state = state;
         lastStageTime = System.currentTimeMillis();
     }
@@ -164,7 +164,7 @@ public class VisionRobot extends Robot {
         //camera control stuff
         opMode.rotation.setIsUsingSecondaryCamera(false);
         opMode.rotation.disableAutoRotate();
-        opMode.rotation.setActivityOrientationFixed(ScreenOrientation.PORTRAIT);
+        opMode.rotation.setActivityOrientationFixed(ScreenOrientation.LANDSCAPE);
 
         //camera control extension specifications
         opMode.cameraControl.setColorTemperature(CameraControlExtension.ColorTemperature.AUTO);
@@ -340,7 +340,7 @@ public class VisionRobot extends Robot {
      * @param data list of doubles
      * @return mean value
      */
-    double mean(List<Double> data) {
+    public double mean(List<Double> data) {
         double sum = 0;
         for(double value : data) {
             sum += value;
