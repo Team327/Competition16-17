@@ -349,7 +349,7 @@ public class VisionRobot extends Robot {
     }
 
     /**
-     * Converts angle to distance (only works if wheels drive same speed)
+     * Converts angle to encoder ticks (only works if wheels drive same speed)
      *
      * @param angle Angle in degrees to convert
      * @return returns ticks of turn

@@ -181,19 +181,20 @@ public class NewTeleOp extends VisionOpMode {
          * toggle control for wall follow (Compatible with inversion)
          * resets wall follow data when turned off
          */
-        if( gamepad1.a && !prev1a)
-        {
-            telemetry.addData("wf breakpoint", -1); telemetry.update();
-            wallFollow = !wallFollow;
-            if(!wallFollow)
-                    robot.resetWallFollow();
-            telemetry.addData("wf breakpoint", 0);
-            prev1a = gamepad1.a;
-        }
-        else if (!gamepad1.a && prev1a)
-        {
-            prev1a = gamepad1.a;
-        }
+//        if( gamepad1.a && !prev1a)
+//        {
+//            telemetry.addData("wf breakpoint", -1); telemetry.update();
+//            wallFollow = !wallFollow;
+//            if(!wallFollow)
+//                    robot.resetWallFollow();
+//            telemetry.addData("wf breakpoint", 0);
+//            prev1a = gamepad1.a;
+//        }
+//        else if (!gamepad1.a && prev1a)
+//        {
+//            prev1a = gamepad1.a;
+//        }
+        //TODO put this back once it works
 
 
         /**
@@ -213,14 +214,12 @@ public class NewTeleOp extends VisionOpMode {
         //SHOOTER---------------------------------------------
 
 
-//        if (gamepad2.a && !prev2a)
-//        {
-//            robot.launch();
-//            prev2a = gamepad2.a;
-//        } else if (!gamepad2.a && prev2a)
-//        {
-//            prev2a = gamepad2.a;
-//        }
+        if (gamepad2.a && !prev2a) {
+            robot.launch();
+            prev2a = gamepad2.a;
+        } else if (!gamepad2.a && prev2a) {
+            prev2a = gamepad2.a;
+        }
 
         telemetry.addData("launch breakpoint", 0); telemetry.update();
         robot.launch(gamepad2.a, telemetry);

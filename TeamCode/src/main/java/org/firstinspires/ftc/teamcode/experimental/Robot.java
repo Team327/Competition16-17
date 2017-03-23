@@ -98,11 +98,11 @@ public class Robot {
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
