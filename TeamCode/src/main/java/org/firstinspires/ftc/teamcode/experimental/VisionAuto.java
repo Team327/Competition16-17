@@ -30,7 +30,7 @@ public class VisionAuto extends LinearVisionOpMode{
     {
         telemetry.addData("Status", "Initializing");telemetry.update();
 
-        visRobot = new SimBot(hardwareMap, this, gamepad1); //TODO revert to new VisionRobot(hardwareMap, this);
+        visRobot = new VisionRobot(hardwareMap, this); //for SimBot use new SimBot(hardwareMap, this, gamepad1);
         telemetry.addData("Status", "instantiated vis Robot"); telemetry.update();
 
         ///VisionOpMode initialization
