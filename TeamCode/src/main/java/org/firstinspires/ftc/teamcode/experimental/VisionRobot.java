@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
@@ -28,8 +29,26 @@ public class VisionRobot extends Robot {
     private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DIST_DRIVE,
             State.DRIVE2DIST, State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
 
-    private final int inchDist = (int) (560 / 12.56); //ticks in one inch (theoretically)
-    private final double efficiencyMultiplier = 1; //roughly the efficiency of the drivetrain
+    /**
+     * Current state or state of previous action
+     */
+    public enum State {
+        PD_BEACON, //Robot is in the middle of PD
+        TIME_DRIVE, //Robot is in middle of timeDrive method
+        DIST_DRIVE, //Robot is driving a set number of encoder ticks
+        DRIVE2DIST, //Robot is in middle of drive2dist method
+        DETECT_BEACON, //detectBeacon method for driving until beacon is seen
+        HIT_BEACON, //hitBeacon method for hitting beacon after approaching it
+        BACKUP, //backupFromBeacon method for backing up from beacon after hitting it
+        SUCCESS, //Last action was successful
+        FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
+        FAILURE_TIMEOUT, //Robot timed out on previous task
+        CANCELLED, //Previous action was cancelled
+        NULL //What it starts out as -> means absolutely nothing
+    }
+
+    private final int inchDist = (int) (560 / 12.56); //ticks per inch (theoretically)
+    private final double efficiencyMultiplier = 3/2.0; //roughly the efficiency of the drivetrain
     private final double fullRotationTicks = dist2ticks(56.52); //James's calculated ticks for rotation
     private final double rotationEfficiencyMultiplier = 1; //added efficiency multiplier for turning
 
@@ -48,10 +67,10 @@ public class VisionRobot extends Robot {
         private double initialBeaconConfidence = 0.2; //TODO real value
 
     //hitBeacon variables
-        private double hitDist = 2; //Distance at which the beacon is hit
+        public double hitDist = 2; //Distance at which the beacon is hit
 
     //backupFromBeacon variables
-        private double backupDist = 20; //Distance at which robot stops backing up
+        public double backupDist = 20; //Distance at which robot stops backing up
 
     //PDtoBeacon cached variables
         private double Kp=0, Kd=0, Ki=0;
@@ -61,12 +80,15 @@ public class VisionRobot extends Robot {
         private long time=0;
 
     //distDrive cached variables
-    private double leftStartPos = 0, rightStartPos = 0;
-    private long ticks; //ticks to drive
+        private double leftStartPos = 0, rightStartPos = 0;
+        private long ticks; //ticks to drive
 
     //drive2dist cached variables
-    private double stopDist = 0;
-    private boolean direction = true;
+        private double stopDist = 0;
+        private boolean direction = true;
+
+    //safety controller vars
+        private double unsafeDist = 25; //distance to stop (cm)
 
     /**
      * Constructor for VisionRobot - extension of Robot class with vision
@@ -90,23 +112,17 @@ public class VisionRobot extends Robot {
         return false;
     }
 
-    /**
-     * Current state or state of previous action
-     */
-    public enum State {
-        PD_BEACON, //Robot is in the middle of PD
-        TIME_DRIVE, //Robot is in middle of timeDrive method
-        DIST_DRIVE, //Robot is driving a set number of encoder ticks
-        DRIVE2DIST, //Robot is in middle of drive2dist method
-        DETECT_BEACON, //detectBeacon method for driving until beacon is seen
-        HIT_BEACON, //hitBeacon method for hitting beacon after approaching it
-        BACKUP, //backupFromBeacon method for backing up from beacon after hitting it
-        SUCCESS, //Last action was successful
-        FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
-        FAILURE_TIMEOUT, //Robot timed out on previous task
-        CANCELLED, //Previous action was cancelled
-        NULL //What it starts out as -> means absolutely nothing
+    public void safetyController() {
+        if(getFrontDist() < unsafeDist) {
+            cancel();
+            setState(State.FAILURE_TECH);
+        }
+        opMode.telemetry.addData("Front Dist",frontDist.getDistance(DistanceUnit.CM));
+        opMode.telemetry.addData("LFront Dist",leftFrontDist.getDistance(DistanceUnit.CM));
+        opMode.telemetry.addData("LBack Dist",leftRearDist.getDistance(DistanceUnit.CM));
     }
+
+
 
     private void setState(State state) {
         this.state = state;
@@ -171,6 +187,8 @@ public class VisionRobot extends Robot {
      * Cancels any action currently going on (mostly for emergencies)
      */
     public void cancel() {
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftMotor.setPower(0);
         rightMotor.setPower(0);
         state = State.CANCELLED;
@@ -337,11 +355,11 @@ public class VisionRobot extends Robot {
      * @return returns ticks of turn
      */
     public int angle2ticks(double angle) {
-        return (int) (angle / 360 * fullRotationTicks * fullRotationTicks); //TODO I think it might need division
+        return (int) (angle / 360 * fullRotationTicks / rotationEfficiencyMultiplier);
     }
 
     public int dist2ticks(double dist) {
-        return (int) (dist * inchDist * efficiencyMultiplier);
+        return (int) (dist * inchDist / efficiencyMultiplier);
     }
 
     /**
@@ -569,7 +587,6 @@ public class VisionRobot extends Robot {
      * Logs a ton of data to telemetry (i.e. beacon location details)
      */
     public void logData() {
-        //TODO add more
         opMode.telemetry.addData("VisionRobotStatus", "Thoroughly incomplete");
     }
 }

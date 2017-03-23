@@ -11,7 +11,7 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
 @TeleOp(name = "Vision TeleOp")
 public class VisionTeleOp extends VisionOpMode {
     VisionRobot visionBot=null;
-    private FinalTeleOp teleOp=null;
+    private NewTeleOp teleOp=null;
     private double Kp=0;
     private double Kd=0;
     private int driveTime=0;
@@ -21,19 +21,82 @@ public class VisionTeleOp extends VisionOpMode {
     private enum varChange {DRIVE_TIME, LEFT_POWER, RIGHT_POWER}
 
     /**
-     * Tank Drive System Description
+     * Controller Map
      *
-     * Gamepad 1 (Driver):
-     *      Left Joystick y: Left Drive
-     *      Right Joystick y: Right Drive
-     *
+     * Gamepad 1:
      *      A:
-     *          Flipper down
+     *          Wall follow (toggle)
      *      B:
-     *          Flipper up
-     *      Right Bumper:
-     *          Invert Drive
+     *          Cap Ball Servo (toggle)
+     *      X:
+     *
+     *      Y:
+     *          Invert Drive (toggle)
+     *      Dpad Up:
+     *
+     *      Dpad Down:
+     *
+     *      Dpad Left:
+     *
+     *      Dpad Right:
+     *
+     *      Start:
+     *
+     *      Back:
+     *
+     *      Left Analog Y:
+     *          Left Side Drive (Wall Follow Power)
+     *      Right Analog Y:
+     *          Right Side Drive
      *      Left Bumper:
+     *          Intake
+     *      Right Bumper:
+     *          Reverse Intake
+     *      Left Trigger:
+     *          Lower Lift
+     *      Right Trigger:
+     *          Raise lift
+     * Gamepad 2:
+     *      A:
+     *          Shoot (Entire process)
+     *      B:
+     *          Beacon out (toggle)
+     *      X:
+     *
+     *      Y:
+     *
+     *      Dpad Up:
+     *
+     *      Dpad Down:
+     *
+     *      Dpad Left:
+     *
+     *      Dpad Right:
+     *
+     *      Start:
+     *
+     *      Back:
+     *
+     *      Left Analog Y:
+     *
+     *      Right Analog Y:
+     *
+     *      Left Bumper:
+     *
+     *      Right Bumper:
+     *
+     *      Left Trigger:
+     *
+     *      Right Trigger:
+     *
+     *
+     */
+
+    /**
+     * Vision Stuff //TODO resolve conflicts
+     * ------------
+     *
+     *  Left Bumper:
      *          Hit beacon
      *      Y:
      *          PD to Beacon
@@ -49,18 +112,33 @@ public class VisionTeleOp extends VisionOpMode {
      *          Add to drive time
      *      Back:
      *          Cancel
-     *
-     *
-     *
-     * Gamepad 2 (Operator):
-     *      Triggers:
-     *          Right (Shoot direction)
-     *          Left (Reverse)
-     *          (Right - Left is direction)
-     *
-     *
-     *
      */
+
+//    /**
+//     * Tank Drive System Description
+//     *
+//     * Gamepad 1 (Driver):
+//     *      Left Joystick y: Left Drive
+//     *      Right Joystick y: Right Drive
+//     *
+//     *      A:
+//     *          Flipper down
+//     *      B:
+//     *          Flipper up
+//     *      Right Bumper:
+//     *          Invert Drive
+
+//     *
+//     *
+//     * Gamepad 2 (Operator):
+//     *      Triggers:
+//     *          Right (Shoot direction)
+//     *          Left (Reverse)
+//     *          (Right - Left is direction)
+//     *
+//     *
+//     *
+//     */
 
     @Override
     public void init()
@@ -74,7 +152,7 @@ public class VisionTeleOp extends VisionOpMode {
         enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
         visionBot.init();
 
-        teleOp = new FinalTeleOp();
+        teleOp = new NewTeleOp();
         teleOp.makeInit(gamepad1, gamepad2, telemetry, hardwareMap);
 
         Kp = 1;

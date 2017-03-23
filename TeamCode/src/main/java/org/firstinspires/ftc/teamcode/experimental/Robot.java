@@ -82,8 +82,8 @@ public class Robot {
 
             //distance sensors
         frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
-        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftFrontDist"));
-        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftRearDist"));
+        leftFrontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftFrontDist"));
+        leftRearDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftRearDist"));
 
         //DEPRECATED sideFlipperMotor = map.dcMotor.get("flipper");
             //DEPRECATED beaconHitter = map.dcMotor.get("beacon");
@@ -91,9 +91,11 @@ public class Robot {
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
