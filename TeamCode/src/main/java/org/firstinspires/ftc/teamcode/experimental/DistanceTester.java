@@ -20,7 +20,7 @@ public class DistanceTester extends OpMode {
     public void init() {
 
         frontDist = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("frontDist"));
-        //leftFrontDist = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("leftFrontDist"));
+        leftFrontDist = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("leftFrontDist"));
         leftRearDist = new ModernRoboticsI2cRangeSensor(hardwareMap.i2cDeviceSynch.get("leftRearDist"));
     }
 
