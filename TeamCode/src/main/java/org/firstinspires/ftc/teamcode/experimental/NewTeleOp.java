@@ -26,7 +26,7 @@ public class NewTeleOp extends VisionOpMode {
     private double kp, ki, kd;
 
     private double loadTime;
-    private final double loadDelay = 500;               //TODO FIND RIGHT TIME
+    private final double loadDelay = 500; //TODO FIND RIGHT TIME
 
 
 
@@ -196,7 +196,6 @@ public class NewTeleOp extends VisionOpMode {
         {
             prev1a = gamepad1.a;
         }
-
 
         /**
          * Toggle Control for Inversion (Compatible with Wall Follow)

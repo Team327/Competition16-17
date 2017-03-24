@@ -30,7 +30,7 @@ public class Robot {
     private double prevTime = 0;
     private final int errorsPeriod = 10; //period of sliding window for error (used in I)
     private final double goal = 4; //Goal distance in CM
-    private final double leftDistSeparation = 30; //TODO measure distance between sensors on bot
+    private double leftDistSeparation = 30; //TODO measure distance between sensors on bot
 
     private int leftLastPos = 0;
     private int rightLastPos = 0;
@@ -125,16 +125,22 @@ public class Robot {
 
     public double getFrontDist()
     {
+        boolean x = true;
+        if(x) return 4; //TODO remove
         return frontDist.getDistance(DistanceUnit.CM);
     }
 
     public double getLeftFrontDist()
     {
+        boolean x = true;
+        if(x) return 5; //TODO remove
         return leftFrontDist.getDistance(DistanceUnit.CM);
     }
 
     public double getLeftRearDist()
     {
+        boolean x = true;
+        if(x) return 6; //TODO remove
         return leftRearDist.getDistance(DistanceUnit.CM);
     }
 
@@ -449,11 +455,24 @@ public class Robot {
      * @param drivePower Ideal drve power (will be the average of left and right
      */
     public void wallFollow(double kp, double kd, double ki, double drivePower, Telemetry telemetry) {
+        boolean x = true;
+
         telemetry.addData("wf breakpoint", 1); telemetry.update();
-        double realDist = Evil.distFromWall(leftDistSeparation, getLeftFrontDist(), getLeftRearDist());
+
+        double frontDist = getLeftFrontDist();
+        double backDist = getLeftRearDist();
+
+        if(x) {
+            frontDist = 11;
+            backDist = 13;
+            leftDistSeparation = 30;
+        };
+
+        double realDist = Evil.distFromWall(leftDistSeparation, frontDist, backDist);
         telemetry.addData("wf breakpoint", 2); telemetry.update();
         double error = realDist - goal;
         telemetry.addData("wf breakpoint", 3); telemetry.update();
+
         if(!errors.isEmpty()) {
             telemetry.addData("wf breakpoint", 4); telemetry.update();
             //We have enough information to actually wall follow

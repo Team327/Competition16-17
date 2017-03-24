@@ -34,14 +34,20 @@ public class SimBot extends Robot {
     }
 
     public double getFrontDist() {
+        boolean x = false;
+        if(x) return 7; //TODO
         return baseDist * (1 - pad.right_trigger);
     }
 
     public double getLeftFrontDist() {
+        boolean x = false;
+        if(x) return 8; //TODO
         return baseDist * (1 - pad.left_trigger);
     }
 
     public double getLeftRearDist() {
+        boolean x = false;
+        if(x) return 9; //TODO
         return baseDist * (1 - pad.left_stick_y);
     }
 
