@@ -41,6 +41,8 @@ public class VisionAuto extends LinearVisionOpMode{
         telemetry.addData("Status","Enabled Extensions");telemetry.update();
         visRobot.init();
         telemetry.addData("Status","visRobot inited");telemetry.update();
+
+        visRobot.setBackward(); //TODO remove this...
     }
 
     @Override

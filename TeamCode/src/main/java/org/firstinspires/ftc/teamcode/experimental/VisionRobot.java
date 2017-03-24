@@ -375,7 +375,7 @@ public class VisionRobot extends Robot {
             setState(State.DIST_DRIVE); //Set state to start going with this op
 
             //initialize motors
-            this.setLeftPower(leftPower); //TODO check that these are in the same direction
+            this.setLeftPower(leftPower);
             this.setRightPower(rightPower);
 
             //Cached vars

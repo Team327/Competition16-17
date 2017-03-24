@@ -156,9 +156,9 @@ public class NewTeleOp extends VisionOpMode {
         telemetry.addData("ENCODER:", robot.getShooterPos());
         telemetry.addData("BEACON PUSHER OUT:", beaconOut);
         telemetry.addData("CAP BALL SERVO OUT:", capBallServoOut);
-        telemetry.addData("INVERTED DRIVE:", invertedDrive);
+        telemetry.addData("INVERTED DRIVE:", robot.getDirection());
         telemetry.addData("WALL FOLLOW:", wallFollow);
-
+        telemetry.addData("DRIVE INPUT", new double[]{gamepad1.left_stick_y, gamepad1.right_stick_y});
 
         //DRIVE-----------------------------------------------
 
@@ -169,6 +169,7 @@ public class NewTeleOp extends VisionOpMode {
             robot.setRightPower(gamepad1.right_stick_y);
             robot.setLeftPower(gamepad1.left_stick_y);
         }
+
         /**
          * drive with set distance from wall
          */
@@ -213,12 +214,14 @@ public class NewTeleOp extends VisionOpMode {
         //SHOOTER---------------------------------------------
 
 
-        if (gamepad2.a && !prev2a) {
-            robot.launch();
-            prev2a = gamepad2.a;
-        } else if (!gamepad2.a && prev2a) {
-            prev2a = gamepad2.a;
-        }
+//        if (gamepad2.a && !prev2a)
+//        {
+//            robot.launch();
+//            prev2a = gamepad2.a;
+//        } else if (!gamepad2.a && prev2a)
+//        {
+//            prev2a = gamepad2.a;
+//        }
 
         telemetry.addData("launch breakpoint", 0); telemetry.update();
         robot.launch(gamepad2.a, telemetry);
@@ -289,11 +292,6 @@ public class NewTeleOp extends VisionOpMode {
         {
             prev2b = gamepad2.b;
         }
-
-
-
-
-
     }
 
 }

@@ -282,8 +282,7 @@ public class Robot {
                 telemetry.addData("shooter pos", shooter.getCurrentPosition());
                 telemetry.addData("shooter goal pos", basePos + pullbackPosition);
 
-                if (shooter
-                        .getCurrentPosition() > basePos + singleRotation) {
+                if (shooter.getCurrentPosition() > basePos + singleRotation) {
                     telemetry.addData("launch breakpoint", 15);
                     shooter.setPower(0);
                     shootState = ShootState.STOPPED;
@@ -354,6 +353,14 @@ public class Robot {
 
     public void setBackward() {
         forward = false;
+    }
+
+    /**
+     * Gets direction of bot
+     * @return Returns true if going forward else false
+     */
+    public boolean getDirection() {
+        return forward;
     }
 
     public boolean checkLeftEncoder() {
