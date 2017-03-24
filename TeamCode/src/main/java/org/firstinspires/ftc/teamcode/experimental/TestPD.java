@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  * Created by gssmrobotics on 3/23/2017.
  */
 
-@Autonomous(name="Test Wall Follow")
+@Autonomous(name="Test Wall Follow", group="Experimental")
 public class TestPD extends OpMode {
     private Robot bot;
     private long startTime=-1;
@@ -33,5 +33,8 @@ public class TestPD extends OpMode {
             bot.resetWallFollow();
         }
         //TODO TODO TODO finish this
+
+        telemetry.addData("front dist", bot.getLeftFrontDist());
+        telemetry.addData("rear dist", bot.getLeftRearDist());
     }
 }

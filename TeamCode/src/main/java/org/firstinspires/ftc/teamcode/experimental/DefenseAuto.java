@@ -132,7 +132,7 @@ public class DefenseAuto extends LinearVisionOpMode {
 
             timeBeacon = System.currentTimeMillis();
             while (System.currentTimeMillis() < timeBeacon + 1000) {
-                VisBot.wallFollow(Kp, Kd, Ki, direction, telemetry);
+                VisBot.wallFollow(Kp, Kd, Ki, direction, 40, telemetry);
             }
             direction *= -1;
         }

@@ -21,12 +21,13 @@ public class SimBot extends Robot {
     private boolean hitterOut=false;
     private Telemetry out;
 
-    private double baseDist = 60;
+    private double baseDist = 20;
     private int rotorTicks = 1120;
 
     public SimBot(HardwareMap map, OpMode op, Gamepad gamepad) {
         super(map);
         out = op.telemetry;
+        pad=gamepad;
     }
 
     protected void hardwareInit(HardwareMap map) {
@@ -34,20 +35,14 @@ public class SimBot extends Robot {
     }
 
     public double getFrontDist() {
-        boolean x = false;
-        if(x) return 7; //TODO
         return baseDist * (1 - pad.right_trigger);
     }
 
     public double getLeftFrontDist() {
-        boolean x = false;
-        if(x) return 8; //TODO
-        return baseDist * (1 - pad.left_trigger);
+        return baseDist * (1 - pad.right_stick_y);
     }
 
     public double getLeftRearDist() {
-        boolean x = false;
-        if(x) return 9; //TODO
         return baseDist * (1 - pad.left_stick_y);
     }
 
@@ -114,6 +109,10 @@ public class SimBot extends Robot {
 
     public void ballOut() {
         //Do nothing for now
+    }
+
+    public void liftBrake() {
+        //Do nothing
     }
 
     public void update() {

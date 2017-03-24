@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -15,13 +17,13 @@ public class NewTeleOp extends VisionOpMode {
     Robot robot;
 
     private boolean prev2b, prev2a; //Gamepad 2
-    private boolean prev1a, prev1y, prev1b; //Gamepad 1
+    private boolean prev1a, prev1y; //Gamepad 1 prev1b
 
     //Telemetry
     private boolean beaconOut;
     private boolean wallFollow;
     private boolean invertedDrive;
-    private boolean capBallServoOut;
+    //private boolean capBallServoOut;
 
     private double kp, ki, kd;
 
@@ -36,14 +38,20 @@ public class NewTeleOp extends VisionOpMode {
         try {
             robot = new Robot(hardwareMap);
         } catch(Exception e) {
+            telemetry.addData("ERROR ERROR ERROR", "Unable to connect to robot");
             robot = new SimBot(hardwareMap, this, gamepad2);
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO remove this - it's a super security concern
         }
 
         //telemetry
         beaconOut = false;
         invertedDrive = true;
         wallFollow = false;
-        capBallServoOut = false;
+        //capBallServoOut = false;
         loadTime = System.currentTimeMillis();
 
         //PID Constants
@@ -53,7 +61,7 @@ public class NewTeleOp extends VisionOpMode {
 
         //Toggle booleans
         prev1a = false;
-        prev1b = false;
+        //prev1b = false;
         prev1y = false;
         prev2b = false;
         prev2a = false;
@@ -156,19 +164,30 @@ public class NewTeleOp extends VisionOpMode {
     {
         telemetry.addData("ENCODER:", robot.getShooterPos());
         telemetry.addData("BEACON PUSHER OUT:", beaconOut);
-        telemetry.addData("CAP BALL SERVO OUT:", capBallServoOut);
+        //telemetry.addData("CAP BALL SERVO OUT:", capBallServoOut);
         telemetry.addData("INVERTED DRIVE:", robot.getDirection());
+        telemetry.addData("DISTANCES: ", "FRONT=" + robot.getFrontDist() + "; LEFT_FRONT=" +
+                robot.getLeftFrontDist() + "; LEFT_REAR=" + robot.getLeftRearDist());
         telemetry.addData("WALL FOLLOW:", wallFollow);
-        telemetry.addData("DRIVE INPUT", new double[]{gamepad1.left_stick_y, gamepad1.right_stick_y});
+        telemetry.addData("DRIVE INPUT", " "+gamepad1.left_stick_y+":"+ gamepad1.right_stick_y);
 
         //DRIVE-----------------------------------------------
 
         /**
          * Drive regularly (tank)
          */
+        double leftDrivePower = -gamepad1.left_stick_y,
+                rightDrivePower = -gamepad1.right_stick_y;
+
+        if(gamepad1.right_stick_button || gamepad1.left_stick_button) {
+            //slow down drive if either is clicked
+            leftDrivePower = leftDrivePower / 3;
+            rightDrivePower = rightDrivePower / 3;
+        }
+
         if(!wallFollow) {
-            robot.setRightPower(gamepad1.right_stick_y);
-            robot.setLeftPower(gamepad1.left_stick_y);
+            robot.setRightPower(rightDrivePower);
+            robot.setLeftPower(leftDrivePower);
         }
 
         /**
@@ -176,7 +195,8 @@ public class NewTeleOp extends VisionOpMode {
          */
         else
         {
-            robot.wallFollow(kp, ki, kd, gamepad1.left_stick_y, telemetry);
+            //robot.wallFollow(kp, ki, kd, leftDrivePower, telemetry);
+            robot.wallFollow(kp, ki, kd, leftDrivePower, 20, telemetry); //TODO revert to above
         }
 
         /**
@@ -185,11 +205,9 @@ public class NewTeleOp extends VisionOpMode {
          */
         if( gamepad1.a && !prev1a)
         {
-            telemetry.addData("wf breakpoint", -1); telemetry.update();
             wallFollow = !wallFollow;
             if(!wallFollow)
                     robot.resetWallFollow();
-            telemetry.addData("wf breakpoint", 0);
             prev1a = gamepad1.a;
         }
         else if (!gamepad1.a && prev1a)
@@ -231,10 +249,10 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * Activates Intake if left bumper
          */
-        if(gamepad1.left_bumper)
+        if(gamepad1.left_trigger != 0)
         {
             robot.intake(1);
-        } else if (gamepad1.right_bumper)
+        } else if (gamepad1.right_trigger != 0)
         {
             robot.intake(-1);
         } else {
@@ -246,18 +264,23 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * lower if left is greater
          */
-        if(gamepad1.left_trigger>gamepad1.right_trigger)
-            robot.lower(gamepad1.left_trigger);
+//        if(gamepad1.left_trigger>gamepad1.right_trigger)
+//            robot.lower(gamepad1.left_trigger);
 
         /**
          * raise if right is greater
          */
-        else if(gamepad1.right_trigger>gamepad1.left_trigger)
-            robot.lift(gamepad1.right_trigger);
+//        else if(gamepad1.right_trigger>gamepad1.left_trigger)
+//            robot.lift(gamepad1.right_trigger);
+
+//        else
+//        {
+//            robot.liftBrake();
+//        }
 
         /**
          * Toggle Control for Cap Ball Servo
-         */
+         *//**
         if(gamepad1.b && !prev1b)
         {
                 if(capBallServoOut)
@@ -265,6 +288,7 @@ public class NewTeleOp extends VisionOpMode {
                 else
                     robot.ballOut();
                 capBallServoOut = !capBallServoOut;
+                prev1b = gamepad1.b;
         }
         else if(!gamepad1.b && prev1b)
         {

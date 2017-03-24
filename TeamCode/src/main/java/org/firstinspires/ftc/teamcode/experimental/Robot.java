@@ -1,9 +1,16 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceReader;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -23,13 +30,13 @@ public class Robot {
     protected DcMotor leftMotor, rightMotor, shooter, caroline, intake;
     protected Boolean forward = true;
     protected ModernRoboticsI2cRangeSensor frontDist, leftFrontDist, leftRearDist;
-    protected Servo beaconPusher, shooterBlock, capHolder;
+    protected I2cDeviceReader frontDistReader, leftFrontDistReader, leftRearDistReader;
+    protected Servo beaconPusher, shooterBlock;     //capHolder
 
     //wall follow cached variables
+    private double prevNanoTime = 0; //not actually in nanos but uses nanos for calculation
     private LinkedList<Double> errors; //sliding window of errors
-    private double prevTime = 0;
     private final int errorsPeriod = 10; //period of sliding window for error (used in I)
-    private final double goal = 4; //Goal distance in CM
     private double leftDistSeparation = 30; //TODO measure distance between sensors on bot
 
     private int leftLastPos = 0;
@@ -39,6 +46,7 @@ public class Robot {
     //Shooting variables
     private ShootState shootState = ShootState.STOPPED;
     private long shootPrevTime = 0;
+    private double prevTime = 0;
     private boolean needInit = false; //true when the robot needs init on moving to next stage
     private int basePos = 0; //tick position of a full rotation before this iteration
 
@@ -46,9 +54,9 @@ public class Robot {
     private final int encoderRotation = 1120; //number of encoder clicks per rotation
 
     private final double shootBlockDelta = 0.5; //servo up position //TODO find
-    private final double shootBlockPos = 0.5; //base position of shooter block position //TODO find
-    private final long shootBlockTime = 500; //time for servo up //TODO find
-    private final double dotDotDotDelta = 0.005; //very small change between iterations of loop //TODO find
+    private final double shootBlockPos = 0.37; //base position of shooter block position //TODO find
+    private final long shootBlockTime = 300; //time for servo up //TODO find
+    private final double dotDotDotDelta = 0.02; //very small change between iterations of loop //TODO find
 
     private final int singleRotation = (int) (gearRatio * encoderRotation);
     private final int pullbackPosition =
@@ -83,26 +91,38 @@ public class Robot {
         //servos
         beaconPusher = map.servo.get("beaconPusher");
         shooterBlock = map.servo.get("shooterBlock");
-        capHolder = map.servo.get("capHolder");
+        //capHolder = map.servo.get("capHolder");
 
         shooterBlock.setPosition(shootBlockPos);
 
         //distance sensors
-        frontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("frontDist"));
-        leftFrontDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftFrontDist"));
-        leftRearDist = new ModernRoboticsI2cRangeSensor(map.i2cDeviceSynch.get("leftRearDist"));
+        I2cDeviceSynch rawFrontDist = map.i2cDeviceSynch.get("frontDist");
+        frontDist = new ModernRoboticsI2cRangeSensor(rawFrontDist);
+        frontDist.setI2cAddress(new I2cAddr(0x12));
+
+        I2cDeviceSynch rawLeftFrontDist = map.i2cDeviceSynch.get("leftFrontDist");
+        leftFrontDist = new ModernRoboticsI2cRangeSensor(rawLeftFrontDist);
+        leftFrontDist.setI2cAddress(new I2cAddr(0x14));
+
+        I2cDeviceSynch rawLeftRearDist = map.i2cDeviceSynch.get("leftRearDist");
+        leftRearDist = new ModernRoboticsI2cRangeSensor(rawLeftRearDist);
+        leftRearDist.setI2cAddress(new I2cAddr(0x16));
+
+        //distance sensor readers //TODO this may replace others
+//        frontDistReader = new I2cDeviceReader(rawFrontDist, new I2cAddr(0x12), 0x04, 2);
+//        leftFrontDistReader = new I2cDeviceReader((I2cDevice)rawFrontDist, new I2cAddr(0x14), 0x04, 2);
+//        leftRearDistReader = new I2cDeviceReader((I2cDevice)rawFrontDist, new I2cAddr(0x16), 0x04, 2);
+
+        frontDist.getDistance(DistanceUnit.CM);
 
         //DEPRECATED sideFlipperMotor = map.dcMotor.get("flipper");
         //DEPRECATED beaconHitter = map.dcMotor.get("beacon");
 
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -125,22 +145,16 @@ public class Robot {
 
     public double getFrontDist()
     {
-        boolean x = true;
-        if(x) return 4; //TODO remove
         return frontDist.getDistance(DistanceUnit.CM);
     }
 
     public double getLeftFrontDist()
     {
-        boolean x = true;
-        if(x) return 5; //TODO remove
         return leftFrontDist.getDistance(DistanceUnit.CM);
     }
 
     public double getLeftRearDist()
     {
-        boolean x = true;
-        if(x) return 6; //TODO remove
         return leftRearDist.getDistance(DistanceUnit.CM);
     }
 
@@ -186,15 +200,10 @@ public class Robot {
      */
 
     public void launch(boolean act, Telemetry telemetry) {
-        //telemetry.addData("launch breakpoint", 1);
         telemetry.addData("ShootState", shootState);
         switch(shootState) {
             case STOPPED:
-                telemetry.addData("launch breakpoint", 2);
-
-                telemetry.addData("motor power", shooter.getPower());//after this
                 if(act) {
-                    telemetry.addData("launch breakpoint", 3);
                     basePos = singleRotation * (shooter.getCurrentPosition() / singleRotation);
                         //finds previous rotation position using truncating division to find number of full rotations
 
@@ -205,20 +214,12 @@ public class Robot {
                 break;//problem after this block
                 //continue to pullback if starting another launch
             case PULLBACK:
-                telemetry.addData("launch breakpoint", 4);
-                telemetry.addData("shooter power", shooter.getPower());
-
                 if (needInit) {//skipping
-                    telemetry.addData("launch breakpoint", 5);
                     shooter.setPower(0.9);
                     needInit = false;
                 }
 
-                telemetry.addData("shooter pos", shooter.getCurrentPosition());
-                telemetry.addData("shooter goal pos", basePos + pullbackPosition);
-
                 if(shooter.getCurrentPosition() > basePos + pullbackPosition) {
-                    telemetry.addData("launch breakpoint", 6);
                     //position is past base position plus position for loaded
                     shooter.setPower(0);
                     shootState = ShootState.LOAD;
@@ -227,41 +228,32 @@ public class Robot {
                 }
                 break;
             case LOAD:
-                telemetry.addData("launch breakpoint", 7);
                 if(needInit) {
-                    telemetry.addData("launch breakpoint", 8);
                     shooterBlock.setPosition(shootBlockPos + shootBlockDelta);
                     needInit = false;
                 }
                 if (System.currentTimeMillis() > prevTime + shootBlockTime) {
-                    telemetry.addData("launch breakpoint", 9);
                     shootState = ShootState.QUEUE_UP;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
                 }
                 break;
             case QUEUE_UP:
-                telemetry.addData("launch breakpoint", 9.1);
                 if (needInit) {
-                    telemetry.addData("launch breakpoint", 9.2);
                     shooterBlock.setPosition(shootBlockPos - shootBlockDelta);
                     needInit = false;
                 }
                 if (System.currentTimeMillis() > prevTime + 2 * shootBlockTime) {
-                    telemetry.addData("launch breakpoint", 9.3);
                     shootState = ShootState.LOAD_RESET;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
                 }
                 break;
             case LOAD_RESET:
-                telemetry.addData("launch breakpoint", 9.5);
                 if(needInit) {
-                    telemetry.addData("launch breakpoint", 10);
                     needInit = false;
                 }
                 if (shooterBlock.getPosition() > shootBlockPos) {
-                    telemetry.addData("launch breakpoing", 11);
                     shootState = ShootState.COCKED_AND_LOADED;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
@@ -270,9 +262,7 @@ public class Robot {
                 }
                 break;
             case COCKED_AND_LOADED:
-                telemetry.addData("launch breakpoint", 12);
                 if(act) {
-                    telemetry.addData("launch breakpoint", 13);
                     shootState = ShootState.SHOOT;
                     prevTime = System.currentTimeMillis();
                     needInit = true;
@@ -280,16 +270,11 @@ public class Robot {
                 break;
             case SHOOT:
                 if(needInit) {
-                    telemetry.addData("launch breakpoint", 14);
                     shooter.setPower(1);
                     needInit = false;
                 }
 
-                telemetry.addData("shooter pos", shooter.getCurrentPosition());
-                telemetry.addData("shooter goal pos", basePos + pullbackPosition);
-
                 if (shooter.getCurrentPosition() > basePos + singleRotation) {
-                    telemetry.addData("launch breakpoint", 15);
                     shooter.setPower(0);
                     shootState = ShootState.STOPPED;
                     prevTime = System.currentTimeMillis();
@@ -298,7 +283,6 @@ public class Robot {
                 break;
 
         }
-        //telemetry.addData("launch breakpoint", 16);
     }
 
 
@@ -329,7 +313,7 @@ public class Robot {
     public void setRightPower(double speed)
     {
         if(forward)
-            rightMotor.setPower(Range.clip(-speed, -1, 1));
+            rightMotor.setPower(Range.clip(speed, -1, 1));
         else
             leftMotor.setPower(Range.clip(-speed, -1, 1));
     }
@@ -339,7 +323,7 @@ public class Robot {
         if(forward)
             leftMotor.setPower(Range.clip(speed, -1, 1));
         else
-            rightMotor.setPower(Range.clip(speed, -1, 1));
+            rightMotor.setPower(Range.clip(-speed, -1, 1));
     }
 
     public void brake()
@@ -406,34 +390,38 @@ public class Robot {
     public void pushBeacon()
     {
         beaconPusher.setPosition(0);        //TODO ENSURE POSITION
-
     }
-
     public void retractBeacon()
     {
-        beaconPusher.setPosition(.75);        //TODO ENSURE POSITION
+        beaconPusher.setPosition(1);        //TODO ENSURE POSITION
     }
 
 
     //LIFT----------------------------------------------------
-
+    @Deprecated
     public void lift(double power)
     {
         caroline.setPower(power);
     }
-
+    @Deprecated
     public void lower(double power)
     {
         caroline.setPower(-power);
     }
-
+    @Deprecated
+    public void liftBrake()
+    {
+        //caroline.setPower(0);
+    }
+    @Deprecated
     public void ballIn()
     {
-        capHolder.setPosition(1);           //TODO ENSURE POSITION
+        //capHolder.setPosition(1);           //TODO ENSURE POSITION
     }
+    @Deprecated
     public void ballOut()
     {
-        capHolder.setPosition(0);           //TODO ENSURE POSITION
+        //capHolder.setPosition(0);           //TODO ENSURE POSITION
     }
 
 
@@ -454,58 +442,58 @@ public class Robot {
      * @param ki Integral constant
      * @param drivePower Ideal drve power (will be the average of left and right
      */
-    public void wallFollow(double kp, double kd, double ki, double drivePower, Telemetry telemetry) {
-        boolean x = true;
-
-        telemetry.addData("wf breakpoint", 1); telemetry.update();
-
-        double frontDist = getLeftFrontDist();
-        double backDist = getLeftRearDist();
-
-        if(x) {
-            frontDist = 11;
-            backDist = 13;
-            leftDistSeparation = 30;
-        };
-
-        double realDist = Evil.distFromWall(leftDistSeparation, frontDist, backDist);
-        telemetry.addData("wf breakpoint", 2); telemetry.update();
+    public void wallFollow(double kp, double kd, double ki, double drivePower, double goal, Telemetry telemetry) {
+        double realDist = Evil.distFromWall(leftDistSeparation, getLeftFrontDist(),getLeftRearDist());
         double error = realDist - goal;
-        telemetry.addData("wf breakpoint", 3); telemetry.update();
 
         if(!errors.isEmpty()) {
-            telemetry.addData("wf breakpoint", 4); telemetry.update();
             //We have enough information to actually wall follow
             double prevError = errors.getLast(); //get previous error for D part
             errors.addLast(error);
             if(errors.size() > errorsPeriod) {
                 errors.removeFirst(); //Remove first to keep constant window size
             }
-            telemetry.addData("wf breakpoint", 5); telemetry.update();
-            double currTime = System.currentTimeMillis(); //current time for use in I and D parts
-            double dt = currTime - prevTime; //Time delta
+            double currTime = System.nanoTime() / 1e9; //current time for use in I and D parts
+            double dt = currTime - prevNanoTime; //Time delta
 
-            double p = error; //proportional part
-            telemetry.addData("wf breakpoint", 6); telemetry.update();
-            double i = sum(errors) * dt / errors.size(); //integral part
-            telemetry.addData("wf breakpoint", 7); telemetry.update();
-            double d = (error - prevError) / dt; //differential part
+            double p = kp* error; //proportional part
+            double i = ki * sum(errors) * dt / errors.size(); //integral part
+            double d = kd * (error - prevError) / dt; //differential part
 
             double steering = p + i + d;
+
+            telemetry.addData("wf -> dist", realDist);
+            telemetry.addData("wf -> raw power", drivePower);
+            telemetry.addData("wf -> dt", dt);
+
+            telemetry.addData("wf -> p", p);
+            telemetry.addData("wf -> i", i);
+            telemetry.addData("wf -> d", d);
+            telemetry.addData("wf -> steering", steering);
 
             //If steering is positive go left (rightPower > leftPower) else go right (opposite)
             double leftPower = drivePower - steering;
             double rightPower = drivePower + steering;
+            telemetry.addData("wf -> leftPower BC", leftPower);
+            telemetry.addData("wf -> rightPower BC", rightPower);
 
-            telemetry.addData("wf breakpoint", 8); telemetry.update();
+            //clip drive to always go in the direction we want
+            if(drivePower > 0) {
+                leftPower = Range.clip(leftPower, 0, 1);
+                rightPower = Range.clip(rightPower, 0, 1);
+            } else {
+                leftPower = Range.clip(leftPower, -1, 0);
+                rightPower = Range.clip(rightPower, -1, 0);
+            }
+            telemetry.addData("wf -> leftPower", leftPower);
+            telemetry.addData("wf -> rightPower", rightPower);
+
             setLeftPower(leftPower);
             setRightPower(rightPower);
-            telemetry.addData("wf breakpoint", 9); telemetry.update();
-            //TODO check if either goes out of bound so it doesn't just lose power to one side (maybe not necessary)
         } else {
             errors.addLast(error);
         }
-        prevTime = System.currentTimeMillis(); //Resets prevTime in both cases for next call
+        prevNanoTime = System.nanoTime() / 1e9; //Resets prevTime in both cases for next call
     }
 
     private double sum(List<Double> list) {

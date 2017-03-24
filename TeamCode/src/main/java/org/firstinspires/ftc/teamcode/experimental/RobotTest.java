@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  * Created by gssmrobotics on 1/14/2017.
  */
 
-@Autonomous(name = "Robot Test")
+@Autonomous(name = "Robot Test", group="Experimental")
 public class RobotTest extends OpMode {
     Robot robot;
 

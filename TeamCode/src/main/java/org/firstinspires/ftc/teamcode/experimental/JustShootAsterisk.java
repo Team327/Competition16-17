@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  * Created by gssmrobotics on 3/22/2017.
  */
 
-@Autonomous(name = "Just Shoot *")
+@Autonomous(name = "Just Shoot *", group="Experimental")
 public class JustShootAsterisk extends OpMode {
     private Robot bot;
 
