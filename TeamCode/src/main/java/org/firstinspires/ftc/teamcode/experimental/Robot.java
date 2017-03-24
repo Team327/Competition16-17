@@ -615,6 +615,78 @@ public class Robot {
         //TODO set everything to defaults
     }
 
+    /**
+     * Drive until frontDist is less than position
+     *
+     * @param leftPower  Left drive power (with camera end as front)
+     * @param rightPower Right drive power (with camera end as front)
+     * @param dist distance (cm) from any object at front
+     * @param time max time to drive
+     * @param direction if true, going forward, else going backward (i.e. object getting farther)
+     */
+    public void drive2dist(double leftPower, double rightPower, double dist, long time, boolean direction) {
+        if(!isBusy(state)) {
+            setState(State.DRIVE2DIST); //Set state to start going with this op
+
+            //initialize motors
+            this.setLeftPower(leftPower); //TODO check that these are in the same direction
+            this.setRightPower(rightPower);
+
+            //Cached vars
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.stopDist = dist;
+            this.time = time;
+            this.direction = direction;
+        }
+        if(state == State.DRIVE2DIST) {
+            if(System.currentTimeMillis() >= lastStageTime + time) {
+                //Time's up - it's done driving
+                cancel(); //call one function to stop everything instead of doing it myself
+                setState(State.FAILURE_TIMEOUT);
+            }
+            if (direction ? (getFrontDist() <= dist) : (getFrontDist() >= dist)) {
+                //distance less than for going forward or greater than for backward drive
+                cancel();
+                setState(State.SUCCESS);
+            }
+            //continue driving
+        }
+        //TODO can we just disregard bad ops?
+    }
+
+    /**
+     * Drive a certain amount of time with constant power
+     *
+     * @param leftPower  Left drive power (with camera end as front)
+     * @param rightPower Right drive power (with camera end as front)
+     * @param time
+     */
+    public void timeDrive(double leftPower, double rightPower, long time) {
+        if(!isBusy(state)) {
+            setState(State.TIME_DRIVE); //Set state to start going with this op
+
+            //initialize motors
+            this.setLeftPower(leftPower); //TODO check that these are in the same direction
+            this.setRightPower(rightPower);
+
+            //Cached vars
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.time = time;
+        }
+        if(state == State.TIME_DRIVE) {
+            if(System.currentTimeMillis() >= lastStageTime + time) {
+                //Time's up - it's done driving
+                cancel(); //call one function to stop everything instead of doing it myself
+                setState(State.SUCCESS);
+            }
+            //continue driving
+        }
+        //TODO can we just disregard bad ops?
+    }
+
+
     /**********************************************************************************************
      * \
      * DEPRECATED STUFF (DEPRECATED: SHIT)                                                        *

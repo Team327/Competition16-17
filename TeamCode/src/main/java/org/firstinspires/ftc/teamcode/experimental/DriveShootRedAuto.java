@@ -11,7 +11,7 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
  */
 @Autonomous(name = "DriveShootRedAuto")
 public class DriveShootRedAuto extends VisionOpMode {
-    VisionRobot robot;
+    Robot robot;
 
     public enum State {DRIVE,SHOOT,BUMP, DONE}
     State stage;
@@ -21,7 +21,7 @@ public class DriveShootRedAuto extends VisionOpMode {
     @Override
     public void init() {
         try {
-            robot = new VisionRobot(hardwareMap, this);
+            robot = new Robot(hardwareMap);
         } catch(Exception e) {
             telemetry.addData("ERROR ERROR ERROR", "Unable to connect to robot");
             robot = new VisSimBot(hardwareMap, this, gamepad2);
