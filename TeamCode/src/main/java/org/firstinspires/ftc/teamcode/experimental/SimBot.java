@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.experimental;
 
+import android.graphics.Path;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -10,7 +13,7 @@ import org.lasarobotics.vision.opmode.VisionOpMode;
  * Created by gssmrobotics on 3/23/2017.
  */
 
-public class SimBot extends VisionRobot {
+public class SimBot extends Robot {
     private Gamepad pad;
     private int shooterPos=0, leftPos=0, rightPos=0;
     private double leftPower=0, rightPower=0;
@@ -21,8 +24,8 @@ public class SimBot extends VisionRobot {
     private double baseDist = 60;
     private int rotorTicks = 1120;
 
-    public SimBot(HardwareMap map, VisionOpMode op, Gamepad gamepad) {
-        super(map, op);
+    public SimBot(HardwareMap map, OpMode op, Gamepad gamepad) {
+        super(map);
         out = op.telemetry;
     }
 

@@ -33,7 +33,11 @@ public class NewTeleOp extends VisionOpMode {
     @Override
     public void init()
     {
-        robot = new Robot(hardwareMap);
+        try {
+            robot = new Robot(hardwareMap);
+        } catch(Exception e) {
+            robot = new SimBot(hardwareMap, this, gamepad2);
+        }
 
         //telemetry
         beaconOut = false;
@@ -53,9 +57,6 @@ public class NewTeleOp extends VisionOpMode {
         prev1y = false;
         prev2b = false;
         prev2a = false;
-
-
-
     }
 
     /**
