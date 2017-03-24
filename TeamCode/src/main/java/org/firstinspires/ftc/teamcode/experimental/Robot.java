@@ -20,6 +20,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.firstinspires.ftc.teamcode.experimental.States.*;
+
+import static java.lang.Math.abs;
+import static org.firstinspires.ftc.teamcode.experimental.States.isBusy;
+
 /**
  * Created by gssmrobotics on 1/17/2017.
  */
@@ -32,6 +37,12 @@ public class Robot {
     protected ModernRoboticsI2cRangeSensor frontDist, leftFrontDist, leftRearDist;
     protected I2cDeviceReader frontDistReader, leftFrontDistReader, leftRearDistReader;
     protected Servo beaconPusher, shooterBlock;     //capHolder
+
+    public State state;
+    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DIST_DRIVE,
+            State.DRIVE2DIST, State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
+
+    private long lastStageTime=0;
 
     //wall follow cached variables
     private double prevNanoTime = 0; //not actually in nanos but uses nanos for calculation
@@ -72,12 +83,30 @@ public class Robot {
         SHOOT //finishes shoot rotation
     }
 
+    //Encoder Vars
+    private final int inchDist = (int) (560 / 12.56); //ticks per inch (theoretically)
+    private final double efficiencyMultiplier = 3/2.0; //roughly the efficiency of the drivetrain
+    private final double fullRotationTicks = dist2ticks(56.52); //James's calculated ticks for rotation
+    private final double rotationEfficiencyMultiplier = 1; //added efficiency multiplier for turning
+
+    //timeDrive cached variables
+    private double leftPower=0, rightPower=0;
+    private long time=0;
+
+    //distDrive cached variables
+    private double leftStartPos = 0, rightStartPos = 0;
+    private long ticks; //ticks to drive
+
+    //drive2dist cached variables
+    private double stopDist = 0;
+    private boolean direction = true;
+
+
+
     public Robot(HardwareMap map)
     {
         hardwareInit(map);
-
-        //wall follow init
-        errors = new LinkedList<>();
+        init();
     }
 
     protected void hardwareInit(HardwareMap map) {
@@ -134,6 +163,13 @@ public class Robot {
 
         //DEPRECATED beaconHitter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         //DEPRECATED sideFlipperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void init() {
+        lastStageTime = System.currentTimeMillis();
+
+        //wall follow init
+        errors = new LinkedList<>();
     }
 
     /**
@@ -383,8 +419,6 @@ public class Robot {
         return true;
     }
 
-
-
     //BEACON--------------------------------------------------
 
     public void pushBeacon()
@@ -514,6 +548,72 @@ public class Robot {
         }
     }
 
+    /**
+     * Converts angle to encoder ticks (only works if wheels drive same speed)
+     *
+     * @param angle Angle in degrees to convert
+     * @return returns ticks of turn
+     */
+    public int angle2ticks(double angle) {
+        return (int) (angle / 360 * fullRotationTicks / rotationEfficiencyMultiplier);
+    }
+
+    public int dist2ticks(double dist) {
+        return (int) (dist * inchDist / efficiencyMultiplier);
+    }
+
+
+    /**
+     * Drive a certain amount of encoder ticks with constant power
+     *
+     * @param leftPower  Left drive power (with camera end as front)
+     * @param rightPower Right drive power (with camera end as front)
+     * @param ticks      Number of encoder ticks to drive (on either wheel - which one gets there first)
+     *                   Note: it uses the absolute value to include negative distances
+     */
+    public void distDriveTicks(double leftPower, double rightPower, long ticks) {
+        if (!isBusy(state)) {
+            setState(State.DIST_DRIVE); //Set state to start going with this op
+
+            //initialize motors
+            this.setLeftPower(leftPower);
+            this.setRightPower(rightPower);
+
+            //Cached vars
+            this.leftPower = leftPower;
+            this.rightPower = rightPower;
+            this.leftStartPos = abs(leftMotor.getCurrentPosition());
+            this.rightStartPos = abs(rightMotor.getCurrentPosition());
+            this.ticks = ticks;
+        }
+        if (state == State.DIST_DRIVE) {
+            if (abs(leftMotor.getCurrentPosition()) > leftStartPos + ticks
+                    || abs(rightMotor.getCurrentPosition()) > rightStartPos + ticks) {
+                //Distance is up - it's done driving
+                cancel(); //call one function to stop everything instead of doing it myself
+                setState(State.SUCCESS);
+            }
+            //continue driving
+        }
+    }
+
+    public void setState(State state) {
+        this.state = state;
+        lastStageTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Cancels any action currently going on (mostly for emergencies)
+     */
+    public void cancel() {
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftMotor.setPower(0);
+        rightMotor.setPower(0);
+        state = State.CANCELLED;
+        lastStageTime = System.currentTimeMillis();
+        //TODO set everything to defaults
+    }
 
     /**********************************************************************************************
      * \

@@ -16,6 +16,7 @@ import org.opencv.core.Size;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.experimental.States.*;
 import static java.lang.Math.abs;
 
 /**
@@ -26,26 +27,6 @@ public class VisionRobot extends Robot {
     private State state = State.NULL; //state of robot
     private VisionOpMode opMode = null;
     private long lastStageTime = 0;
-    private final State[] busyStates = {State.PD_BEACON, State.TIME_DRIVE, State.DIST_DRIVE,
-            State.DRIVE2DIST, State.DETECT_BEACON, State.HIT_BEACON, State.BACKUP}; //TODO add more
-
-    /**
-     * Current state or state of previous action
-     */
-    public enum State {
-        PD_BEACON, //Robot is in the middle of PD
-        TIME_DRIVE, //Robot is in middle of timeDrive method
-        DIST_DRIVE, //Robot is driving a set number of encoder ticks
-        DRIVE2DIST, //Robot is in middle of drive2dist method
-        DETECT_BEACON, //detectBeacon method for driving until beacon is seen
-        HIT_BEACON, //hitBeacon method for hitting beacon after approaching it
-        BACKUP, //backupFromBeacon method for backing up from beacon after hitting it
-        SUCCESS, //Last action was successful
-        FAILURE_TECH, //Failure for technical reasons (i.e. beacon navigation lost sight of beacon)
-        FAILURE_TIMEOUT, //Robot timed out on previous task
-        CANCELLED, //Previous action was cancelled
-        NULL //What it starts out as -> means absolutely nothing
-    }
 
     private final int inchDist = (int) (560 / 12.56); //ticks per inch (theoretically)
     private final double efficiencyMultiplier = 3/2.0; //roughly the efficiency of the drivetrain
@@ -105,13 +86,6 @@ public class VisionRobot extends Robot {
         slidingConfidence = new LinkedList<>();
     }
 
-    public boolean contains(State[] list, State item) {
-        for(State i : list) {
-            if(item == i) return true;
-        }
-        return false;
-    }
-
     public void safetyController() {
         if(getFrontDist() < unsafeDist) {
             cancel();
@@ -121,8 +95,6 @@ public class VisionRobot extends Robot {
         opMode.telemetry.addData("LFront Dist",leftFrontDist.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("LBack Dist",leftRearDist.getDistance(DistanceUnit.CM));
     }
-
-
 
     public void setState(State state) {
         this.state = state;
@@ -171,14 +143,6 @@ public class VisionRobot extends Robot {
         opMode.cameraControl.setManualExposureCompensation(Constants.EXPO_COMP);
     }
 
-    /**
-     * Is the robot busy? (Descriptive commenting thanks to FIRST API)
-     * @return Returns true if the robot is busy
-     */
-    public boolean isBusy() {
-        return contains(busyStates, state);
-    } //TODO fix this to use others
-
     public State getState() {
         return state;
     }
@@ -204,7 +168,7 @@ public class VisionRobot extends Robot {
      * @param maxTime max time to go before quitting millis
      */
     public void PDtoBeacon(double Kp, double Kd, long maxTime) {
-        if(!isBusy()) { //TODO TODO TODO fix this
+        if(!isBusy(state)) { //TODO TODO TODO fix this
             setState(State.PD_BEACON);
 
             slidingConfidence = new LinkedList<>();
@@ -305,7 +269,7 @@ public class VisionRobot extends Robot {
      * @param rightPower Power of right side (with camera end as front)
      */
     public void detectBeacon(double leftPower, double rightPower, long time) {
-        if(!isBusy()) { //TODO TODO TODO fix this
+        if(!isBusy(state)) { //TODO TODO TODO fix this
             setState(State.DETECT_BEACON);
             slidingConfidence = new LinkedList<>();
             setLeftPower(leftPower);
@@ -348,19 +312,6 @@ public class VisionRobot extends Robot {
         return data.size() != 0 ? sum / data.size() : 0;
     }
 
-    /**
-     * Converts angle to encoder ticks (only works if wheels drive same speed)
-     *
-     * @param angle Angle in degrees to convert
-     * @return returns ticks of turn
-     */
-    public int angle2ticks(double angle) {
-        return (int) (angle / 360 * fullRotationTicks / rotationEfficiencyMultiplier);
-    }
-
-    public int dist2ticks(double dist) {
-        return (int) (dist * inchDist / efficiencyMultiplier);
-    }
 
     /**
      * Drive a certain amount of encoder ticks with constant power
@@ -371,7 +322,7 @@ public class VisionRobot extends Robot {
      *                   Note: it uses the absolute value to include negative distances
      */
     public void distDriveTicks(double leftPower, double rightPower, long ticks) {
-        if (!isBusy()) {
+        if (!isBusy(state)) {
             setState(State.DIST_DRIVE); //Set state to start going with this op
 
             //initialize motors
@@ -404,7 +355,7 @@ public class VisionRobot extends Robot {
      * @param time
      */
     public void timeDrive(double leftPower, double rightPower, long time) {
-        if(!isBusy()) {
+        if(!isBusy(state)) {
             setState(State.TIME_DRIVE); //Set state to start going with this op
 
             //initialize motors
@@ -437,7 +388,7 @@ public class VisionRobot extends Robot {
      * @param direction if true, going forward, else going backward (i.e. object getting farther)
      */
     public void drive2dist(double leftPower, double rightPower, double dist, long time, boolean direction) {
-        if(!isBusy()) {
+        if(!isBusy(state)) {
             setState(State.DRIVE2DIST); //Set state to start going with this op
 
             //initialize motors
@@ -475,7 +426,7 @@ public class VisionRobot extends Robot {
      * @param maxTime    Max time to drive before failure due to timeout
      */
     public void hitBeacon(double leftPower, double rightPower, long maxTime) {
-        if(!isBusy()) {
+        if(!isBusy(state)) {
             setState(State.HIT_BEACON);
             setLeftPower(leftPower);
             setRightPower(rightPower);
@@ -507,7 +458,7 @@ public class VisionRobot extends Robot {
      * @param time       Time to drive before stopping
      */
     public void backupFromBeacon(double leftPower, double rightPower, long time) {
-        if(!isBusy()) {
+        if(!isBusy(state)) {
             setState(State.BACKUP);
             setLeftPower(leftPower);
             setRightPower(rightPower);

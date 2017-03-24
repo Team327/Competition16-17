@@ -16,7 +16,17 @@ public class JustShootAsterisk extends OpMode {
 
     @Override
     public void init() {
-        bot = new Robot(hardwareMap);
+        try {
+            bot = new Robot(hardwareMap);
+        } catch(Exception e) {
+            telemetry.addData("ERROR ERROR ERROR", "Unable to connect to robot");
+            bot = new SimBot(hardwareMap, this, gamepad2);
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO remove this - it's a super security concern
+        }
         prevTime = System.currentTimeMillis();
     }
 

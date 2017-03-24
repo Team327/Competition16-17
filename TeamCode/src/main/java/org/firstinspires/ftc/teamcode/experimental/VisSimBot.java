@@ -5,12 +5,13 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.lasarobotics.vision.opmode.VisionOpMode;
 
 /**
  * Created by gssmrobotics on 3/23/2017.
  */
 
-public class SimBot extends Robot {
+public class VisSimBot extends VisionRobot {
     private Gamepad pad;
     private int shooterPos=0, leftPos=0, rightPos=0;
     private double leftPower=0, rightPower=0;
@@ -21,8 +22,8 @@ public class SimBot extends Robot {
     private double baseDist = 20;
     private int rotorTicks = 1120;
 
-    public SimBot(HardwareMap map, OpMode op, Gamepad gamepad) {
-        super(map);
+    public VisSimBot(HardwareMap map, VisionOpMode op, Gamepad gamepad) {
+        super(map, op);
         out = op.telemetry;
         pad=gamepad;
     }

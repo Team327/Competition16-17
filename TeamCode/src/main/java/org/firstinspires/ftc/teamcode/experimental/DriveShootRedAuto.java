@@ -20,7 +20,17 @@ public class DriveShootRedAuto extends VisionOpMode {
 
     @Override
     public void init() {
-        robot = new VisionRobot(hardwareMap,this);
+        try {
+            robot = new VisionRobot(hardwareMap, this);
+        } catch(Exception e) {
+            telemetry.addData("ERROR ERROR ERROR", "Unable to connect to robot");
+            robot = new VisSimBot(hardwareMap, this, gamepad2);
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO remove this - it's a super security concern
+        }
         stage = State.DRIVE;
         lastStageTime=0;
 
@@ -36,7 +46,7 @@ public class DriveShootRedAuto extends VisionOpMode {
     public void loop() {
         if(lastStageTime==0) {
             lastStageTime = System.currentTimeMillis();
-        }else {
+        } else {
             switch (stage) {
                 case DRIVE:
                     robot.drive2dist(-.5, -.5, 6, 15000, false);
@@ -45,8 +55,8 @@ public class DriveShootRedAuto extends VisionOpMode {
                         lastStageTime=System.currentTimeMillis();
                         stage= State.SHOOT;
                         robot.brake();
-                    }
                     break;
+                    }
                 case SHOOT:
                     robot.launch(true,telemetry);
                     if(System.currentTimeMillis()-lastStageTime>2000)
