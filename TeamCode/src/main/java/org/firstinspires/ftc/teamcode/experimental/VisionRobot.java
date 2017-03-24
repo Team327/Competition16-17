@@ -168,7 +168,7 @@ public class VisionRobot extends Robot {
      * @param maxTime max time to go before quitting millis
      */
     public void PDtoBeacon(double Kp, double Kd, long maxTime) {
-        if(!isBusy(state)) { //TODO TODO TODO fix this
+        if(!States.isBusy(state)) { //TODO TODO TODO fix this
             setState(State.PD_BEACON);
 
             slidingConfidence = new LinkedList<>();
@@ -269,7 +269,7 @@ public class VisionRobot extends Robot {
      * @param rightPower Power of right side (with camera end as front)
      */
     public void detectBeacon(double leftPower, double rightPower, long time) {
-        if(!isBusy(state)) { //TODO TODO TODO fix this
+        if(!States.isBusy(state)) { //TODO TODO TODO fix this
             setState(State.DETECT_BEACON);
             slidingConfidence = new LinkedList<>();
             setLeftPower(leftPower);
@@ -322,7 +322,7 @@ public class VisionRobot extends Robot {
      *                   Note: it uses the absolute value to include negative distances
      */
     public void distDriveTicks(double leftPower, double rightPower, long ticks) {
-        if (!isBusy(state)) {
+        if (!States.isBusy(state)) {
             setState(State.DIST_DRIVE); //Set state to start going with this op
 
             //initialize motors
@@ -355,7 +355,7 @@ public class VisionRobot extends Robot {
      * @param maxTime    Max time to drive before failure due to timeout
      */
     public void hitBeacon(double leftPower, double rightPower, long maxTime) {
-        if(!isBusy(state)) {
+        if(!States.isBusy(state)) {
             setState(State.HIT_BEACON);
             setLeftPower(leftPower);
             setRightPower(rightPower);
@@ -387,7 +387,7 @@ public class VisionRobot extends Robot {
      * @param time       Time to drive before stopping
      */
     public void backupFromBeacon(double leftPower, double rightPower, long time) {
-        if(!isBusy(state)) {
+        if(!States.isBusy(state)) {
             setState(State.BACKUP);
             setLeftPower(leftPower);
             setRightPower(rightPower);

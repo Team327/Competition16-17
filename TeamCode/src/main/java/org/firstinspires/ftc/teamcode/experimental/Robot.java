@@ -572,7 +572,7 @@ public class Robot {
      *                   Note: it uses the absolute value to include negative distances
      */
     public void distDriveTicks(double leftPower, double rightPower, long ticks) {
-        if (!isBusy(state)) {
+        if (!States.isBusy(state)) {
             setState(State.DIST_DRIVE); //Set state to start going with this op
 
             //initialize motors
@@ -625,7 +625,7 @@ public class Robot {
      * @param direction if true, going forward, else going backward (i.e. object getting farther)
      */
     public void drive2dist(double leftPower, double rightPower, double dist, long time, boolean direction) {
-        if(!isBusy(state)) {
+        if(!States.isBusy(state)) {
             setState(State.DRIVE2DIST); //Set state to start going with this op
 
             //initialize motors
@@ -655,6 +655,10 @@ public class Robot {
         //TODO can we just disregard bad ops?
     }
 
+    public boolean isBusy() {
+        return States.isBusy(state);
+    }
+
     /**
      * Drive a certain amount of time with constant power
      *
@@ -663,7 +667,7 @@ public class Robot {
      * @param time
      */
     public void timeDrive(double leftPower, double rightPower, long time) {
-        if(!isBusy(state)) {
+        if(!States.isBusy(state)) {
             setState(State.TIME_DRIVE); //Set state to start going with this op
 
             //initialize motors
