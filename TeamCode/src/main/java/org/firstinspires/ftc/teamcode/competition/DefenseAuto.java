@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.competition;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.lasarobotics.vision.opmode.LinearVisionOpMode;
 
@@ -7,138 +9,159 @@ import org.lasarobotics.vision.opmode.LinearVisionOpMode;
  * Created by gssmrobotics on 3/23/2017.
  */
 
-public class DefenseAuto extends LinearVisionOpMode {
-    VisionRobot VisBot;
+public class DefenseAuto extends OpMode {
+    Robot robot;
 
-    static final double Kp = 1;
-    static final double Kd = -1;
-    static final double Ki = 1;
     //telemetry
     private Telemetry.Item status;
 
+    public enum State {
+        DRIVE,
+        SHORT_WAIT,
+        SHOOT,
+        DRIVE_UP,
+        TURN_TO_BEACON,
+        DRIVE_TO_BEACON,
+        ALIGN_BEACONS,
+        WALL_FOLLOW,
+        DONE
+    }
+    State stage;
+
     //Time
-    private long time;
+    private long time = 0;
+    private long lastStageTime =0;
 
     //single iteration variable
     private final boolean communism = true; //Are we the red alliance
     private final int balls2shoot = 2; //Number of balls to shoot
 
 
-    public void initialize() {
+    @Override
+    public void init() {
+        try {
+            robot = new Robot(hardwareMap);
+        } catch(Exception e) {
+            telemetry.addData("ERROR ERROR ERROR", "Unable to connect to robot");
+            robot = new SimBot(hardwareMap, this, gamepad2);
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+            //TODO remove this - it's a super security concern
+        }
+        stage = State.DRIVE;
+        lastStageTime=0;
 
-        status = updateTele(status, "Initializing...");
+        robot.init();
 
-        //Enable Vision Robot
-        VisBot = new VisionRobot(hardwareMap, this);
-        status = updateTele(status, "Initializing Vision Robot");
-
-
-        //Enable extensions
-        enableExtension(Extensions.BEACON);         //Beacon detection
-        enableExtension(Extensions.ROTATION);       //Automatic screen rotation correction
-        enableExtension(Extensions.CAMERA_CONTROL); //Manual camera control
-        status = updateTele(status, "Initialized Extensions");
-
-        VisBot.init();
-        status = updateTele(status, "Initialized Vision Robot");
-
-
+        if(communism) {
+            robot.setBackward();
+        }
     }
 
-    public void runOpMode() throws InterruptedException {
-        status.addData("Status:", "Begun");
-        this.initialize();
+    @Override
+    public void loop() {
 
-        status = updateTele(status, "Ready to go");
-        waitForStart();
-        status = updateTele(status, "Started");
-        time = System.currentTimeMillis();
-
-        //Drive to The Vortex
-
-        int direction = (communism ? -1 : 1);
-        VisBot.distDriveTicks(direction, direction, VisBot.dist2ticks(60));
-        status = updateTele(status, "Driving");
-
-        while (VisBot.isBusy()) {
-            status = updateTele(status, "Driving to Center Vortex");
-            VisBot.continueAction();
-
+        if(time ==0)
+        {
+            time = System
         }
+        if(lastStageTime==0) {
+            lastStageTime = System.currentTimeMillis();
+        } else {
+            switch (stage) {
+                case DRIVE:
+                    robot.timeDrive(0.5, 0.5, 1500);
+                    if(!robot.isBusy())
+                    {
+                        lastStageTime=System.currentTimeMillis();
+                        stage= State.SHOOT;
+                        robot.cancel();
+                    }
+                    break;
+                case SHORT_WAIT:
+                    if(System.currentTimeMillis() > lastStageTime + 500) {
+                        lastStageTime = System.currentTimeMillis();
+                        stage = State.SHOOT;
+                        robot.cancel();
+                    }
+                case SHOOT:
+                    robot.launch(true,telemetry);
+                    for (int i = 1; i <= balls2shoot; i++) {
+                        while (robot.getShootState() != Robot.ShootState.COCKED_AND_LOADED) {
+                            //Start shooting a ball (get to COCKED_AND_READY state)
+                            telemetry.addData("auto status", "shooting ball " + i);
+                            telemetry.addData("bot status", robot.getState());
+                            telemetry.addData("shooter status", robot.getShootState());
+                            robot.launch(true, telemetry);
+                        }
+                        while (robot.getShootState() != Robot.ShootState.STOPPED) {
+                            //Finish shooting without starting another iteration
+                            telemetry.addData("auto status", "shooting ball " + i);
+                            telemetry.addData("bot status", robot.getState());
+                            telemetry.addData("shooter status", robot.getShootState());
+                            robot.launch(false, telemetry);
+                        }
+                    }
 
-        //Shoot into Vortex
+                    stage = State.DRIVE_UP;
+                    robot.cancel();
+//                    if(System.currentTimeMillis()-lastStageTime>5000)
+//                    {
+//                        lastStageTime=System.currentTimeMillis();
+//                        stage= DriveShootRedAuto.State.DONE; //Set to ONWARD if you want to do experimental stuff
+//                        robot.cancel();
+//                    }
+                    break;
 
-        //copied from Vision Auto
-        for (int i = 1; i <= balls2shoot; i++) {
-            while (VisBot.getShootState() != Robot.ShootState.COCKED_AND_LOADED) {
-                //Start shooting a ball (get to COCKED_AND_READY state)
-                status = updateTele(status, "Shooting");
-                VisBot.launch(true, telemetry);
+                case DRIVE_UP:
+                    robot.timeDrive(0.5, 0.5, 500);
+
+                    stage = State.TURN_TO_BEACON;
+                    robot.cancel();
+
+                case TURN_TO_BEACON:
+                {
+
+                    long turnTime = ( communism ? 500: 1500);
+                    robot.timeDrive(-0.5, 0.5, turnTime);
+                    stage = State.DRIVE_TO_BEACON;
+                    robot.cancel();
+
+
+                }
+
+                case DRIVE_TO_BEACON:
+                {
+                    robot.timeDrive(0.7, 0.7, 1500);
+
+                    stage = State.ALIGN_BEACONS;
+                    robot.cancel();
+                }
+
+                case ALIGN_BEACONS:
+                {
+                    double turnAngle = (communism ? 0.5: -0.5);
+                    robot.timeDrive( turnAngle, -turnAngle, 1000);
+                    stage = State.WALL_FOLLOW;
+                    robot.cancel();
+                }
+
+                case WALL_FOLLOW:
+                {
+                    while
+                }
+
+                case DONE:
+
+                    break;
+
             }
-            while (VisBot.getShootState() != Robot.ShootState.STOPPED) {
-                //Finish shooting without starting another iteration
-                status = updateTele(status, "Shooting");
-                VisBot.launch(false, telemetry);
-            }
         }
-
-        //Turn towards beacons
-
-        if (!communism) {
-            status = updateTele(status, "Adjusting for Blue side");
-            VisBot.distDriveTicks(.5, .5, VisBot.dist2ticks(18));
-            while (VisBot.isBusy()) {
-                VisBot.continueAction();
-
-            }
-        }
-
-        //red or blue direction
-        double beaconAngle = (communism ? 0.5 : -0.5);
-
-        VisBot.distDriveTicks(beaconAngle, -beaconAngle, VisBot.angle2ticks(45));
-        status = updateTele(status, "Turning Around Ball");
-        while (VisBot.isBusy()) {
-            VisBot.continueAction();
-        }
-        while (System.currentTimeMillis() < time + 10000) {
-        }
-
-        //Run over to beacons
-
-        double speed = (communism ? -.8 : .8);
-
-        status = updateTele(status, "Running to block Beacon");
-        VisBot.distDriveTicks(speed, speed, VisBot.dist2ticks(54));
-        while (VisBot.isBusy()) {
-            VisBot.continueAction();
-        }
-
-        //Turn to align with beacons
-
-        double alignmentAngle = (communism ? -0.5 : 0.5);
-
-        status = updateTele(status, "Turning along beacons");
-        VisBot.distDriveTicks(alignmentAngle, -alignmentAngle, VisBot.angle2ticks(90));
-        while (VisBot.isBusy()) {
-            VisBot.continueAction();
-        }
-
-        //Drive between beacons
-
-        long timeBeacon = System.currentTimeMillis();
-        direction = (communism ? 1 : -1);
-        while (System.currentTimeMillis() < time + 2800) {
-
-            timeBeacon = System.currentTimeMillis();
-            while (System.currentTimeMillis() < timeBeacon + 1000) {
-                VisBot.wallFollow(Kp, Kd, Ki, direction, 40, telemetry);
-            }
-            direction *= -1;
-        }
-        VisBot.brake();
-
     }
+
+
 
 
     /**

@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.competition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.competition.Robot;
-
 /**
  * Created by gssmrobotics on 3/23/2017.
  */
@@ -12,8 +10,7 @@ import org.firstinspires.ftc.teamcode.competition.Robot;
 @Autonomous(name="Test Wall Follow", group="Experimental")
 public class TestPD extends OpMode {
     private Robot bot;
-    private long startTime=-1;
-    private double Kp, Ki, Kd;
+    private long startTime=-1;;
     private boolean forward=true;
 
     @Override
@@ -34,7 +31,10 @@ public class TestPD extends OpMode {
         if(prevForward != forward) {
             bot.resetWallFollow();
         }
-        //TODO TODO TODO finish this
+
+        forward = true; //TODO remove
+        double power = forward ? 0.3 : -0.3;
+        bot.wallFollow(TeamConstants.WF_Kp, TeamConstants.WF_Kd, TeamConstants.WF_Ki, power, 40, telemetry);
 
         telemetry.addData("front dist", bot.getLeftFrontDist());
         telemetry.addData("rear dist", bot.getLeftRearDist());

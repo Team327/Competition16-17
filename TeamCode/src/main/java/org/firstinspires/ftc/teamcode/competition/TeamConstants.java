@@ -12,4 +12,9 @@ public class TeamConstants {
     public static final int ANDYMARK_TICKS_PER_REV = 1120; //ticks per revolution
     public static final int BEACON_HIT_TICKS =100;//ticks to hit
     public static final double DIST_THRESHOLD = 0.036;
+
+    //Wall Follow PID constants
+    public static final double WF_Kp = 0.006;//increase until destructive oscillations ensue, move to d
+    public static final double WF_Kd = 0.000;//increase until destructive oscillations are ended
+    public static final double WF_Ki = 0.000;//No steady state error
 }

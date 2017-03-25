@@ -174,6 +174,8 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * Drive regularly (tank)
          */
+
+
         double leftDrivePower = -gamepad1.left_stick_y,
                 rightDrivePower = -gamepad1.right_stick_y;
 
@@ -181,6 +183,16 @@ public class NewTeleOp extends VisionOpMode {
             //slow down drive if either is clicked
             leftDrivePower = leftDrivePower / 3;
             rightDrivePower = rightDrivePower / 3;
+        }
+
+        if(gamepad1.a)
+        {
+            wallFollow = true;
+        }
+        else
+        {
+            wallFollow = false;
+            robot.resetWallFollow();
         }
 
         if(!wallFollow) {
@@ -200,7 +212,7 @@ public class NewTeleOp extends VisionOpMode {
         /**
          * toggle control for wall follow (Compatible with inversion)
          * resets wall follow data when turned off
-         */
+         *//*
         if( gamepad1.a && !prev1a)
         {
             wallFollow = !wallFollow;

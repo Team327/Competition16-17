@@ -29,8 +29,7 @@ import static java.lang.Math.abs;
 public class Robot {
     protected DcMotor leftMotor, rightMotor, shooter, caroline, intake;
     protected Boolean forward = true;
-    protected ModernRoboticsI2cRangeSensor frontDist, leftFrontDist, leftRearDist;
-    protected I2cDeviceReader frontDistReader, leftFrontDistReader, leftRearDistReader;
+    protected RangeSensor frontDist, leftFrontDist, leftRearDist;
     protected Servo beaconPusher, shooterBlock;     //capHolder
 
     public State state;
@@ -43,7 +42,7 @@ public class Robot {
     private double prevNanoTime = 0; //not actually in nanos but uses nanos for calculation
     private LinkedList<Double> errors; //sliding window of errors
     private final int errorsPeriod = 10; //period of sliding window for error (used in I)
-    private double leftDistSeparation = 30; //TODO measure distance between sensors on bot
+    private double leftDistSeparation = 38.5; //TODO measure distance between sensors on bot
 
     private int leftLastPos = 0;
     private int rightLastPos = 0;
@@ -62,7 +61,7 @@ public class Robot {
     private final double shootBlockDelta = 0.5; //servo up position //TODO find
     private final double shootBlockPos = 0.37; //base position of shooter block position //TODO find
     private final long shootBlockTime = 300; //time for servo up //TODO find
-    private final double dotDotDotDelta = 0.02; //very small change between iterations of loop //TODO find
+    private final double dotDotDotDelta = 0.05; //very small change between iterations of loop //TODO find
 
     private final int singleRotation = (int) (gearRatio * encoderRotation);
     private final int pullbackPosition =
@@ -118,17 +117,9 @@ public class Robot {
         shooterBlock.setPosition(shootBlockPos);
 
         //distance sensors
-        I2cDeviceSynch rawFrontDist = map.i2cDeviceSynch.get("frontDist");
-        frontDist = new ModernRoboticsI2cRangeSensor(rawFrontDist);
-        frontDist.setI2cAddress(new I2cAddr(0x12));
-
-        I2cDeviceSynch rawLeftFrontDist = map.i2cDeviceSynch.get("leftFrontDist");
-        leftFrontDist = new ModernRoboticsI2cRangeSensor(rawLeftFrontDist);
-        leftFrontDist.setI2cAddress(new I2cAddr(0x14));
-
-        I2cDeviceSynch rawLeftRearDist = map.i2cDeviceSynch.get("leftRearDist");
-        leftRearDist = new ModernRoboticsI2cRangeSensor(rawLeftRearDist);
-        leftRearDist.setI2cAddress(new I2cAddr(0x16));
+        leftFrontDist = new RangeSensor(map.i2cDevice.get("leftFrontDist"), 0x12);
+        leftRearDist = new RangeSensor(map.i2cDevice.get("leftRearDist"), 0x16);
+        frontDist = new RangeSensor(map.i2cDevice.get("frontDist"), 0x14);
 
         //distance sensor readers //TODO this may replace others
 //        frontDistReader = new I2cDeviceReader(rawFrontDist, new I2cAddr(0x12), 0x04, 2);
@@ -163,6 +154,10 @@ public class Robot {
 
         //wall follow init
         errors = new LinkedList<>();
+    }
+
+    public State getState() {
+        return state;
     }
 
     /**
@@ -470,7 +465,12 @@ public class Robot {
      * @param drivePower Ideal drve power (will be the average of left and right
      */
     public void wallFollow(double kp, double kd, double ki, double drivePower, double goal, Telemetry telemetry) {
-        double realDist = Evil.distFromWall(leftDistSeparation, getLeftFrontDist(),getLeftRearDist());
+        double foreDist = getLeftFrontDist();
+        double aftDist = getLeftRearDist();
+        if(foreDist >= 255 || aftDist >= 255) {
+            return; //Discard all 255 values
+        }
+        double realDist = Evil.distFromWall(leftDistSeparation, foreDist,aftDist);
         double error = realDist - goal;
 
         if(!errors.isEmpty()) {
