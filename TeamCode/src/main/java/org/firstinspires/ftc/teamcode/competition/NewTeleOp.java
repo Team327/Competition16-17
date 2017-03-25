@@ -23,6 +23,7 @@ public class NewTeleOp extends VisionOpMode {
     private boolean invertedDrive;
     //private boolean capBallServoOut;
 
+    private double dpad_motor_vel;
     private double kp, ki, kd;
 
     private double loadTime;
@@ -185,6 +186,13 @@ public class NewTeleOp extends VisionOpMode {
             rightDrivePower = rightDrivePower / 3;
         }
 
+        if(gamepad1.dpad_left)
+        {
+            robot.setLeftPower(dpad_motor_vel);
+        } else if (gamepad1.dpad_right)
+        {
+            robot.setRightPower(dpad_motor_vel);
+        }
         if(gamepad1.a)
         {
             wallFollow = true;

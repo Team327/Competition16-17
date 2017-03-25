@@ -59,13 +59,13 @@ public class Robot {
     private final int encoderRotation = 1120; //number of encoder clicks per rotation
 
     private final double shootBlockDelta = 0.5; //servo up position //TODO find
-    private final double shootBlockPos = 0.37; //base position of shooter block position //TODO find
+    private final double shootBlockPos = 0.34; //base position of shooter block position //TODO find
     private final long shootBlockTime = 300; //time for servo up //TODO find
     private final double dotDotDotDelta = 0.05; //very small change between iterations of loop //TODO find
 
     private final int singleRotation = (int) (gearRatio * encoderRotation);
     private final int pullbackPosition =
-            (int) ((300.0 / 360) * singleRotation); //Degrees of position when shooter is in pullback position //TODO find
+            (int) ((270.0 / 360) * singleRotation); //Degrees of position when shooter is in pullback position //TODO find
 
     public enum ShootState {
         STOPPED, //stopped and ready to shoot
@@ -122,6 +122,7 @@ public class Robot {
         frontDist = new RangeSensor(map.i2cDevice.get("frontDist"), 0x14);
 
         //distance sensor readers //TODO this may replace others
+
 //        frontDistReader = new I2cDeviceReader(rawFrontDist, new I2cAddr(0x12), 0x04, 2);
 //        leftFrontDistReader = new I2cDeviceReader((I2cDevice)rawFrontDist, new I2cAddr(0x14), 0x04, 2);
 //        leftRearDistReader = new I2cDeviceReader((I2cDevice)rawFrontDist, new I2cAddr(0x16), 0x04, 2);
@@ -158,6 +159,14 @@ public class Robot {
 
     public State getState() {
         return state;
+    }
+
+    public long currentLeftTicks() {
+        return leftMotor.getCurrentPosition();
+    }
+
+    public long currentRightTicks() {
+        return rightMotor.getCurrentPosition();
     }
 
     /**
@@ -487,7 +496,9 @@ public class Robot {
             double i = ki * sum(errors) * dt / errors.size(); //integral part
             double d = kd * (error - prevError) / dt; //differential part
 
-            double steering = p + i + d;
+            double steering = ( drivePower > 0 ?
+                    p + i + d :
+                    -p + i + d );
 
             telemetry.addData("wf -> dist", realDist);
             telemetry.addData("wf -> raw power", drivePower);

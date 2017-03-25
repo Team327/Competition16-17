@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.competition;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -10,12 +12,25 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 public class DriveShootRedAuto extends OpMode {
     Robot robot;
 
-    public enum State {DRIVE,SHOOT,BUMP, ONWARD,WAIT, TURN,UPWARD, SHORT_WAIT, DONE}
+    public enum State {
+        DELAY,
+        DRIVE,
+        SHOOT,
+        BUMP,
+        ONWARD,
+        WAIT,
+        TURN,
+        UPWARD,
+        SHORT_WAIT,
+
+        DONE}
     State stage;
 
     double lastStageTime = 0;
 
-    boolean communism = false; //true if red
+    boolean communism = true; //true if red
+
+    long delay =    15      * 1000;
 
     @Override
     public void init() {
@@ -30,7 +45,7 @@ public class DriveShootRedAuto extends OpMode {
             //TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
             //TODO remove this - it's a super security concern
         }
-        stage = State.DRIVE;
+        stage = State.DELAY;
         lastStageTime=0;
 
         robot.init();
@@ -46,13 +61,21 @@ public class DriveShootRedAuto extends OpMode {
             lastStageTime = System.currentTimeMillis();
         } else {
             switch (stage) {
+                case DELAY:
+                {
+                    if(System.currentTimeMillis() + delay > lastStageTime )
+                    {
+                        stage = State.DRIVE;
+                    }
+                }
                 case DRIVE:
-                    robot.timeDrive(0.5, 0.5, 1500);
+                    robot.timeDrive(0.5, 0.5, 1400); //TODO TODO revert to 0.5, 0.5
                     if(!robot.isBusy())
                     {
                         lastStageTime=System.currentTimeMillis();
                         stage= State.SHOOT;
                         robot.cancel();
+//                        Log.d("Drive Pos", "" + robot.currentLeftTicks());
                     }
                     break;
                 case SHORT_WAIT:
@@ -66,20 +89,22 @@ public class DriveShootRedAuto extends OpMode {
                     if(System.currentTimeMillis()-lastStageTime>5000)
                     {
                         lastStageTime=System.currentTimeMillis();
-                        stage= State.DONE; //Set to ONWARD if you want to do experimental stuff
+                        stage= State.ONWARD; //Set to ONWARD if you want to do experimental stuff
                         robot.cancel();
                     }
                     break;
-                //Note that these parts are optional and will be skipped
+
                 case ONWARD:
-                    robot.timeDrive(0.5, 0.5, 300);
+                    robot.timeDrive(0.5, 0.5, 1000);
                     if(!robot.isBusy())
                     {
                         lastStageTime=System.currentTimeMillis();
-                        stage= State.TURN;
+                        stage= State.DONE;
                         robot.cancel();
                     }
                     break;
+
+                //not in use
                 case TURN:
                     robot.timeDrive(-0.5, 0.5, 400);
                     if(!robot.isBusy()) {
