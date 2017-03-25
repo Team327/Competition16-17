@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.experimental;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.competition.Robot;
 import org.lasarobotics.vision.android.Cameras;
 import org.lasarobotics.vision.ftc.resq.Beacon;
 import org.lasarobotics.vision.ftc.resq.Constants;

@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.experimental;
-
-import android.util.Log;
+package org.firstinspires.ftc.teamcode.competition;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -179,7 +177,7 @@ public class NewTeleOp extends VisionOpMode {
         double leftDrivePower = -gamepad1.left_stick_y,
                 rightDrivePower = -gamepad1.right_stick_y;
 
-        if(gamepad1.right_stick_button || gamepad1.left_stick_button) {
+        if(gamepad1.right_bumper || gamepad1.left_bumper) {
             //slow down drive if either is clicked
             leftDrivePower = leftDrivePower / 3;
             rightDrivePower = rightDrivePower / 3;

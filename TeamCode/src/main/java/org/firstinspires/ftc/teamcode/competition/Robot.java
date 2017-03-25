@@ -1,14 +1,10 @@
-package org.firstinspires.ftc.teamcode.experimental;
-
-import android.util.Log;
+package org.firstinspires.ftc.teamcode.competition;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannelController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceReader;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -20,10 +16,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.firstinspires.ftc.teamcode.experimental.States.*;
+import org.firstinspires.ftc.teamcode.competition.States.*;
 
 import static java.lang.Math.abs;
-import static org.firstinspires.ftc.teamcode.experimental.States.isBusy;
 
 /**
  * Created by gssmrobotics on 1/17/2017.
@@ -100,8 +95,6 @@ public class Robot {
     //drive2dist cached variables
     private double stopDist = 0;
     private boolean direction = true;
-
-
 
     public Robot(HardwareMap map)
     {
@@ -610,6 +603,7 @@ public class Robot {
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftMotor.setPower(0);
         rightMotor.setPower(0);
+        shooter.setPower(0);
         state = State.CANCELLED;
         lastStageTime = System.currentTimeMillis();
         //TODO set everything to defaults
@@ -657,6 +651,24 @@ public class Robot {
 
     public boolean isBusy() {
         return States.isBusy(state);
+    }
+
+    /**
+     * Continues whatever action is in progress (whatever the state of the robot is)
+     */
+    public void continueAction() {
+        switch (state) {
+            case TIME_DRIVE:
+                timeDrive(leftPower, rightPower, time);
+                break;
+            case DIST_DRIVE:
+                distDriveTicks(leftPower, rightPower, ticks);
+                break;
+            case DRIVE2DIST:
+                drive2dist(leftPower, rightPower, stopDist, time, direction);
+                break;
+            //If it's something else, we can't do it
+        }
     }
 
     /**
