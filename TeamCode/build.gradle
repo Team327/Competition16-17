@@ -11,5 +11,18 @@
 
 // Custom definitions may go here
 
+
+plugins {
+    id "com.github.rzabini.gradle-jython" version "1.0.0"
+}
+
 // Include common definitions from above.
 apply from: '../build.common.gradle'
+
+def helloAndroid="""
+print('Hello from $project.name')
+"""
+
+task testJython(type:jython.JythonTask) {
+    script helloAndroid
+}
