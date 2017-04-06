@@ -23,14 +23,14 @@ public class RobotCore {
     }
 
     private boolean setup = false;
-    private Map<String, HardwareDevice> devices;
-    private Map<String, RobotModule> modules;
-    private RobotAnnotations annotations;
+    private Map<String, HardwareDevice> devices; //Map of hardware devices initialized
+    private Map<String, RobotModule> modules; //Map of modules initialized
+
+    private Map<String, Class<? extends RobotModule>> moduleTypes; //Types of possible modules (used in initializing modules
 
     private RobotCore() {
         devices = new HashMap<>();
         modules = new HashMap<>();
-        annotations = RobotAnnotations.getInstance();
         moduleTypes = getModuleTypes(); //get all modules
     }
 
@@ -45,10 +45,10 @@ public class RobotCore {
     }
 
     //TODO possibly handle named constructors? Or nah?
-    public RobotModule[] resolveDependencies(String... modTypes) {
-        RobotModule[] resolved = new RobotModule[modTypes.length];
+    public Map<String, RobotModule> resolveDependencies(String... modTypes) {
+        Map<String, RobotModule> resolved = new HashMap<>();
         for(int i = 0; i < modTypes.length; i++) {
-            resolved[i] = getModuleOrCreate(modTypes[i]);
+            resolved.put(modTypes[i], getModuleOrCreate(modTypes[i]));
         }
         return resolved;
     }
@@ -66,48 +66,45 @@ public class RobotCore {
         }
     }
 
-    public RobotModule getModule(String modType) {
+    public <T extends RobotModule> T getModule(String modType) {
         if(modules.containsKey(modType)) {
-            return modules.get(modType);
+            return (T) modules.get(modType); //This could give ClassCastException
         } else {
             throw new IllegalArgumentException("No device " + modType);
         }
     }
 
-    public RobotModule getModuleOrCreate(String modType) {
-        return getModuleOrCreate(modType, null);
+    public <T extends RobotModule> T getModuleOrCreate(String modType) {
+        return (T) getModuleOrCreate(modType, null); //This could give ClassCastException
     }
 
-    public RobotModule getModuleOrCreate(String modType, Object[] args) {
+    public <T extends RobotModule> T getModuleOrCreate(String modType, Object[] args) {
         if(modules.containsKey(modType)) {
-            return modules.get(modType); //TODO should we ensure this has right type?
+            return (T) modules.get(modType); //This could give ClassCastException //TODO should we ensure this has right type?
         } else {
-            return create(modType, args);
+            return (T) create(modType, args); //This could give ClassCastException
         }
     }
 
-
-    private Map<String, Class<? extends RobotModule>> moduleTypes;
-
-    public RobotModule create(String typeName) {
+    public <T extends RobotModule> T create(String typeName) {
         RobotModule instance = createBase(typeName, null);
         modules.put(typeName, instance);
-        return instance;
+        return (T) instance; //This could give ClassCastException
     }
 
-    public RobotModule create(String modType, Object[] args) {
+    public <T extends RobotModule> T create(String modType, Object[] args) {
         RobotModule instance = createBase(modType, args);
         modules.put(modType, instance);
-        return instance;
+        return (T) instance; //This could give ClassCastException
     }
 
     //Creates an instance of the type associated with the name
-    public RobotModule createBase(String typeName, Object[] args) {
+    public <T extends RobotModule> T createBase(String typeName, Object[] args) {
         Class<? extends RobotModule> type = getType(typeName); //throws InvalidArgument if not valid
         try {
             if(args == null) {
                 //no arguments to constructor
-                return type.newInstance(); //creates instance of extending type with default constructor
+                return (T) type.newInstance(); //This could give ClassCastException //creates instance of extending type with default constructor
             } else {
                 //there are args to pass
                 Class<?>[] argTypes = new Class<?>[args.length];
@@ -118,7 +115,7 @@ public class RobotCore {
                     //Call constructor created by types of arguments
                     //TODO make sure it doesn't mess up with extended types
                     //TODO possibly loop through all constructors and test if they are valid subclass args
-                    return RobotModule.class.getDeclaredConstructor(argTypes).newInstance(args);
+                    return (T) RobotModule.class.getDeclaredConstructor(argTypes).newInstance(args); //This could give ClassCastException
                 } catch(NoSuchMethodException|SecurityException|InvocationTargetException e) {
                     throw new IllegalArgumentException("Invalid constructor for module " + typeName);
                 }
