@@ -7,6 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import javassist.util.proxy.MethodHandler;
+
 /**
  * Created by roboticsteam on 4/5/2017.
  */
@@ -35,6 +37,8 @@ public abstract class RobotModule {
         return null; //TODO
     }
 
+    //TODO explore MethodHandle library to use overloaded methods
+
     //TODO don't make function generic (except in this case it may be appropriate)
     private Function generateFunction(Method method, Class<?> paramTypes) {
         Class<?> returnType = method.getReturnType();
@@ -48,6 +52,11 @@ public abstract class RobotModule {
         } catch(InvocationTargetException|IllegalAccessException e) {
             throw new IllegalArgumentException("Invalid use of method " + method.getName());
         }
+    }
+
+    private Method getMethod(String methodName, Object params) {
+        return null; //TODO fix this
+//        MethodHandles.Lookup lookup = MethodHandles.lookup();
     }
 
     private Method getMethod(String methodName, Class<?> paramTypes) {
