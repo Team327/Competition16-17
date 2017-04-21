@@ -15,8 +15,8 @@ import java.util.TreeMap;
  * Created by roboticsteam on 4/5/2017.
  */
 public class RobotCore {
+    private static Reflections reflections = new Reflections("org.firstinspires.ftc.teamcode"); //Note: must be before RobotCore initialization
     private static RobotCore ourInstance = new RobotCore();
-    private static Reflections reflections = new Reflections("org.firstinspires.ftc.teamcode");
 
     public static RobotCore getInstance() {
         return ourInstance;
