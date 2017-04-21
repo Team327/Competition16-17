@@ -16,8 +16,9 @@ public class AnnotationTest extends OpMode {
     @Override
     public void init() {
         Log.d("Status","Getting RobotCore");
-        core = RobotCore.getInstance();
+        core = RobotCore.getInstance(hardwareMap);
         Log.d("Status","Got RobotCore");
+        core.create("dependent");
         //core.getModuleOrCreate("dependent");
     }
 

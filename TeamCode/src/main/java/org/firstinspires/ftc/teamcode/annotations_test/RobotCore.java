@@ -1,25 +1,41 @@
 package org.firstinspires.ftc.teamcode.annotations_test;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Created by roboticsteam on 4/5/2017.
  */
 public class RobotCore {
-    private static Reflections reflections = new Reflections("org.firstinspires.ftc.teamcode"); //Note: must be before RobotCore initialization
+    private static Reflections reflections = new Reflections(new ConfigurationBuilder()
+            .setUrls(ClasspathHelper.forClass(RobotCore.class))
+    );
+    //TODO the reflections either crash the system, loop for a long time, or return empty
     private static RobotCore ourInstance = new RobotCore();
 
-    public static RobotCore getInstance() {
+    public static RobotCore getInstance(HardwareMap map) {
+        ourInstance.setup(map);
         return ourInstance;
+    }
+
+    public static RobotCore getInstance() {
+        if(ourInstance.setup) {
+            return ourInstance;
+        } else {
+            throw new UnsupportedOperationException("Cannot initialize without HardwareMap");
+        }
     }
 
     private boolean setup = false;
@@ -32,16 +48,20 @@ public class RobotCore {
         devices = new HashMap<>();
         modules = new HashMap<>();
         moduleTypes = getModuleTypes(); //get all modules
+        Log.d("Module Types", Arrays.toString(moduleTypes.entrySet().toArray()));
     }
 
     public void setup(HardwareMap hardwareMap) {
         //TODO TODO TODO Figure out how to iterate hardwareMap
-//        if(!setup) {
-//            for(HardwareDevice dev : hardwareMap) {
-//                //Put all devices in a map
-//                devices.put(dev.getDeviceName(), dev);
-//            }
-//        }
+        //TODO TODO TODO TODO Iterate over everything instead of just servos
+        //Because the HardwareMap doesn't implement iterable for some strange reason
+        if(!setup) {
+            for(Object rawDev : hardwareMap.servo) {
+                //Put all devices in a map
+                HardwareDevice dev = (HardwareDevice) rawDev;
+                devices.put(dev.getDeviceName(), dev);
+            }
+        }
         setup = true;
     }
 
@@ -135,8 +155,9 @@ public class RobotCore {
     }
 
     private Map<String, Class<? extends RobotModule>> getModuleTypes() {
-        Map<String, Class<? extends RobotModule>> modules = new TreeMap<>();
+        Map<String, Class<? extends RobotModule>> modules = new HashMap<>();
 
+        Log.d("Reflections Everything", Arrays.toString(reflections.getTypesAnnotatedWith(Module.class).toArray()));
         Set<Class<? extends RobotModule>> moduleTypes = reflections.getSubTypesOf(RobotModule.class);
 
         //Loop over each Class which has annotation
