@@ -35,12 +35,13 @@ public class RobotCore {
     }
 
     public void setup(HardwareMap hardwareMap) {
-        if(!setup) {
-            for(HardwareDevice dev : hardwareMap) {
-                //Put all devices in a map
-                devices.put(dev.getDeviceName(), dev);
-            }
-        }
+        //TODO TODO TODO Figure out how to iterate hardwareMap
+//        if(!setup) {
+//            for(HardwareDevice dev : hardwareMap) {
+//                //Put all devices in a map
+//                devices.put(dev.getDeviceName(), dev);
+//            }
+//        }
         setup = true;
     }
 
