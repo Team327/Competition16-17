@@ -16,5 +16,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 }
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
+    // https://mvnrepository.com/artifact/org.reflections/reflections
+    compile 'org.reflections:reflections:0.9.11'
 }

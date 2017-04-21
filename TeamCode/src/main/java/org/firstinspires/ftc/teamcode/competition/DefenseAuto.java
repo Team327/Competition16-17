@@ -1,14 +1,9 @@
 package org.firstinspires.ftc.teamcode.competition;
 
-import android.provider.Settings;
-
-import com.qualcomm.hardware.adafruit.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.internal.opengl.shaders.CubeMeshFragmentShader;
-import org.lasarobotics.vision.opmode.LinearVisionOpMode;
 
 /**
  * Created by gssmrobotics on 3/23/2017.
