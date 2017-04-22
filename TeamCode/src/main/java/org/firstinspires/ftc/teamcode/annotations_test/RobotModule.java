@@ -27,24 +27,24 @@ public abstract class RobotModule {
 
     //TODO Problem: Somehow handle circular dependencies
 
-    public <Any> Any call(String methodName, Object... args) {
+    public <T> T call(String methodName, Object... args) {
         return null; //TODO
     }
 
-    protected <T extends RobotModule> T dependent(String typeName) {
+    protected <T extends RobotModule> T _dependent(String typeName) {
         return null; //TODO
     }
 
     //TODO explore MethodHandle library to use overloaded methods
 
     //TODO don't make function generic (except in this case it may be appropriate)
-    private Function generateFunction(Method method, Class<?> paramTypes) {
+    private Function _generateFunction(Method method, Class<?> paramTypes) {
         Class<?> returnType = method.getReturnType();
 //        Function funct = this::call;
         return null; //TODO
     }
 
-    private <T> T call(Method method, Object... params) {
+    private <T> T _call(Method method, Object... params) {
         try {
             return (T) method.invoke(this, params);
         } catch(InvocationTargetException|IllegalAccessException e) {
@@ -52,12 +52,12 @@ public abstract class RobotModule {
         }
     }
 
-    private Method getMethod(String methodName, Object params) {
+    private Method _getMethod(String methodName, Object params) {
         return null; //TODO fix this
 //        MethodHandles.Lookup lookup = MethodHandles.lookup();
     }
 
-    private Method getMethod(String methodName, Class<?> paramTypes) {
+    private Method _getMethod(String methodName, Class<?> paramTypes) {
         try {
             Method method;
             if(paramTypes == null) {

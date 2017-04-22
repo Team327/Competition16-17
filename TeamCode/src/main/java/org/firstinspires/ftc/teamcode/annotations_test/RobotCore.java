@@ -2,12 +2,11 @@ package org.firstinspires.ftc.teamcode.annotations_test;
 
 import android.util.Log;
 
+import com.google.common.reflect.Reflection;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.reflections.Reflections;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -19,8 +18,8 @@ import java.util.Set;
  * Created by roboticsteam on 4/5/2017.
  */
 public class RobotCore {
-    private static Reflections reflections = new Reflections(new ConfigurationBuilder()
-            .setUrls(ClasspathHelper.forClass(RobotCore.class))
+    private static Reflections reflections = new Reflections(
+            Reflection.getPackageName(RobotCore.class)
     );
     //TODO the reflections either crash the system, loop for a long time, or return empty
     private static RobotCore ourInstance = new RobotCore();
@@ -52,13 +51,10 @@ public class RobotCore {
     }
 
     public void setup(HardwareMap hardwareMap) {
-        //TODO TODO TODO Figure out how to iterate hardwareMap
-        //TODO TODO TODO TODO Iterate over everything instead of just servos
         //Because the HardwareMap doesn't implement iterable for some strange reason
         if(!setup) {
-            for(Object rawDev : hardwareMap.servo) {
+            for(HardwareDevice dev : AnnotationTools.hardwareMapSet(hardwareMap)) {
                 //Put all devices in a map
-                HardwareDevice dev = (HardwareDevice) rawDev;
                 devices.put(dev.getDeviceName(), dev);
             }
         }
@@ -157,7 +153,7 @@ public class RobotCore {
     private Map<String, Class<? extends RobotModule>> getModuleTypes() {
         Map<String, Class<? extends RobotModule>> modules = new HashMap<>();
 
-        Log.d("Reflections Everything", Arrays.toString(reflections.getTypesAnnotatedWith(Module.class).toArray()));
+        Log.d("Reflections Everything", Arrays.toString(reflections.getSubTypesOf(Object.class).toArray()));
         Set<Class<? extends RobotModule>> moduleTypes = reflections.getSubTypesOf(RobotModule.class);
 
         //Loop over each Class which has annotation
