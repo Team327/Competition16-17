@@ -9,12 +9,36 @@
 // before doing so.
 // Custom definitions may go here
 // Include common definitions from above.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.codehaus.groovy:groovy-android-gradle-plugin:1.1.0'
+    }
+}
+
+plugins {
+    id "com.github.hierynomus.jython" version "0.6.0"
+}
+
 apply from: '../build.common.gradle'
+
 android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
 }
-dependencies {
+
+repositories {
+    jcenter()
 }
+
+dependencies {
+    compile "org.codehaus.groovy:groovy:2.4.10:grooid"
+}
+
+apply plugin: 'groovyx.android'
+apply plugin: 'jython'
