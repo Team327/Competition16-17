@@ -16,5 +16,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 }
+
+repositories {
+    jcenter()
+}
+
 dependencies {
+    compile group: 'org.python', name: 'jython-standalone', version: '2.7.0'
 }
